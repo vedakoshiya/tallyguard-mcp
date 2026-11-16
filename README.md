@@ -150,6 +150,7 @@ tallyguard-mcp/
 
 ## Documentation
 
+- [Master Development Plan & Progress Tracker](docs/DEVELOPMENT_PLAN.md)
 - [Full Specification](docs/SPECIFICATION.md)
 - [Implementation Guide](docs/IMPLEMENTATION.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
