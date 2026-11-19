@@ -95,18 +95,18 @@ The TallyGuard MCP test suite is structured across 8 rigorous testing layers to 
 
 | Test ID | Functionality / Scenario | Input / Precondition | Expected Result | Requirement | Current Status |
 |---|---|---|---|---|---|
-| `TC-AUTH-01` | Missing token rejection | MCP tool request without `Authorization` header | Fails with `UNAUTHORIZED` (HTTP 401) | FR-050, FR-044 | `PLANNED (Phase 2)` |
-| `TC-AUTH-02` | Expired JWT token | Token expired by 1 second | Fails with `UNAUTHORIZED`, instructs client to refresh | FR-050 | `PLANNED (Phase 2)` |
-| `TC-AUTH-03` | Tampered token signature | Token signature modified | Fails with `UNAUTHORIZED` | FR-050 | `PLANNED (Phase 2)` |
-| `TC-AUTH-04` | Scope denial: reading vouchers without `read:vouchers` | Client token has only `read:reports` | Fails with `SCOPE_DENIED` | FR-051, US-07 | `PLANNED (Phase 2)` |
-| `TC-AUTH-05` | Human permission separation | Client attempts to claim `approve:vouchers` in OAuth token | Token issuance rejects permission; AI cannot receive approve scope | FR-053, INV-03 | `PLANNED (Phase 2)` |
-| `TC-AUTH-06` | Ledger allow-list enforcement | User restricted to `["Sundry Debtors"]` attempts to read `HDFC Bank` | Fails with `SCOPE_DENIED: Ledger outside user scope` | FR-051, US-07 | `PLANNED (Phase 2)` |
-| `TC-AUTH-07` | Rate limiting: burst quota breach | Client sends > 60 requests in 10 seconds | Fails with `RATE_LIMITED` and `retry_after` timestamp | FR-052, FR-044 | `PLANNED (Phase 2)` |
-| `TC-AUD-01` | Audit log entry generation | Any read tool execution | Append-only entry created with `actor`, `tool`, `args_hash`, `correlation_id` | FR-084, US-06 | `PLANNED (Phase 2)` |
-| `TC-AUD-02` | HMAC-SHA256 Hash Chaining | Sequence of 5 audit entries | `entry[N].prev_hash == entry[N-1].entry_hash`; cryptographic chain valid | FR-084, INV-07 | `PLANNED (Phase 2)` |
-| `TC-AUD-03` | Audit log tampering detection | Artificially modify one row in audit table | Audit verifier detects invalid HMAC signature and breaks chain | FR-084, STRIDE | `PLANNED (Phase 2)` |
-| `TC-AUD-04` | Sensitive data redaction in audit | Call tool with account number or PAN | `args_redacted` hides sensitive digits (`****1234`) | FR-083 | `PLANNED (Phase 2)` |
-| `TC-AUD-05` | Tenant emergency kill-switch | `tenants.kill_switch = TRUE` | All subsequent MCP calls immediately return 403 Forbidden | FR-092 | `PLANNED (Phase 2)` |
+| `TC-AUTH-01` | Missing token rejection | MCP tool request without `Authorization` header | Fails with `UNAUTHORIZED` (HTTP 401) | FR-050, FR-044 | `PASSING` |
+| `TC-AUTH-02` | Expired JWT token | Token expired by 1 second | Fails with `UNAUTHORIZED`, instructs client to refresh | FR-050 | `PASSING` |
+| `TC-AUTH-03` | Tampered token signature | Token signature modified | Fails with `UNAUTHORIZED` | FR-050 | `PASSING` |
+| `TC-AUTH-04` | Scope denial: reading vouchers without `read:vouchers` | Client token has only `read:reports` | Fails with `SCOPE_DENIED` | FR-051, US-07 | `PASSING` |
+| `TC-AUTH-05` | Human permission separation | Client attempts to claim `approve:vouchers` in OAuth token | Token issuance rejects permission; AI cannot receive approve scope | FR-053, INV-03 | `PASSING` |
+| `TC-AUTH-06` | Ledger allow-list enforcement | User restricted to `["Sundry Debtors"]` attempts to read `HDFC Bank` | Fails with `SCOPE_DENIED: Ledger outside user scope` | FR-051, US-07 | `PASSING` |
+| `TC-AUTH-07` | Rate limiting: burst quota breach | Client sends > 60 requests in 10 seconds | Fails with `RATE_LIMITED` and `retry_after` timestamp | FR-052, FR-044 | `PASSING` |
+| `TC-AUD-01` | Audit log entry generation | Any read tool execution | Append-only entry created with `actor`, `tool`, `args_hash`, `correlation_id` | FR-084, US-06 | `PASSING` |
+| `TC-AUD-02` | HMAC-SHA256 Hash Chaining | Sequence of 5 audit entries | `entry[N].prev_hash == entry[N-1].entry_hash`; cryptographic chain valid | FR-084, INV-07 | `PASSING` |
+| `TC-AUD-03` | Audit log tampering detection | Artificially modify one row in audit table | Audit verifier detects invalid HMAC signature and breaks chain | FR-084, STRIDE | `PASSING` |
+| `TC-AUD-04` | Sensitive data redaction in audit | Call tool with account number or PAN | `args_redacted` hides sensitive digits (`****1234`) | FR-083 | `PASSING` |
+| `TC-AUD-05` | Tenant emergency kill-switch | `tenants.kill_switch = TRUE` | All subsequent MCP calls immediately return 403 Forbidden | FR-092 | `PASSING` |
 
 ---
 

@@ -1,11 +1,11 @@
 # TallyGuard MCP: Master Development Plan & Execution Tracker
 
-**Document Version:** 1.1.0  
+**Document Version:** 1.3.0  
 **Initial Baseline Date:** 2026-11-17  
-**Last Updated:** 2026-11-17  
-**Current Phase:** Phase 1 Complete — Moving to Phase 2 (Security Controls & Hash-Chained Audit Trail)  
-**Overall Completion:** 35% (Phase 0 & Phase 1 Complete)  
-**Main Branch Commit:** Pending push for Phase 1  
+**Last Updated:** 2026-11-20  
+**Current Phase:** Phase 2 Complete — Moving to Phase 3 (Draft Engine, Anomaly Rules & Approval Portal)  
+**Overall Completion:** 55% (Phase 0, Phase 1 & Phase 2 Complete)  
+**Main Branch Commit:** `dbf3899` (Working tree ready for Phase 2 push)  
 **GitHub Repository:** [vedakoshiya/tallyguard-mcp](https://github.com/vedakoshiya/tallyguard-mcp)
 
 ---
@@ -28,11 +28,11 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 |---|---|---|---|
 | **INV-01** | **Decimal-Exact Currency**: No Python `float` used for monetary math; exact paisa calculations via `Decimal` and `ROUND_HALF_UP`. | `bridge/tally_adapter/decimal_math.py` | `ACTIVE & TESTED` (7 tests passing) |
 | **INV-02** | **Zero Direct AI Writes**: AI clients can never post or delete vouchers in Tally. Write tools strictly output draft proposals. | `server/mcp/tools/drafts.py` | `PLANNED` (Phase 3) |
-| **INV-03** | **Out-of-Band Approval**: Voucher posting requires human authentication. Approver channel decoupled from MCP session. | `web/approval/`, `server/drafts/` | `PLANNED` (Phase 3) |
+| **INV-03** | **Out-of-Band Approval**: Voucher posting requires human authentication. Approver channel decoupled from MCP session. | `server/auth/tokens.py`, `server/auth/scopes.py` | `ACTIVE & TESTED` (AI cannot hold approve scope) |
 | **INV-04** | **Cryptographic Hash Matching**: `approvals.payload_hash` must equal `drafts.payload_hash` before any bridge posting. | `server/drafts/hashing.py` | `PLANNED` (Phase 3) |
 | **INV-05** | **Prompt Injection Isolation**: Book text (narrations, names, remarks) treated as untrusted; wrapped in `untrusted_text` and sanitized. | `server/sanitize/untrusted_text.py` | `ACTIVE & TESTED` (5 tests passing) |
 | **INV-06** | **Template Allow-Listing**: Bridge only accepts parameterized `template_id` requests. Raw XML from cloud is rejected. | `bridge/templates/allowlist.py` | `ACTIVE & TESTED` (Allow-list enforced) |
-| **INV-07** | **Append-Only Audit Log**: Hash-chained audit logs (`prev_hash` + `entry_hash`). No SQL `UPDATE`/`DELETE` permitted. | `server/audit/hash_chain.py` | `PLANNED` (Phase 2) |
+| **INV-07** | **Append-Only Audit Log**: Hash-chained audit logs (`prev_hash` + `entry_hash`). No SQL `UPDATE`/`DELETE` permitted. | `server/audit/hash_chain.py` | `ACTIVE & TESTED` (Tamper-detection verified) |
 | **INV-08** | **Zero Inbound Ports**: Bridge service connects outbound-only over TLS/WebSocket. | `bridge/relay_client.py` | `PLANNED` (Phase 5) |
 
 ---
@@ -65,7 +65,7 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 
 ### Phase 1: Foundation, Decimal Math, Simulated Tally & Read Tools
 *Target: Exact paisa reconciliation across all read operations (Goals G1, G5, G6)*  
-*Status: COMPLETED (100% — 25 unit & reconciliation tests passing)*
+*Status: COMPLETED (100% — 30 unit, e2e & reconciliation tests passing)*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
@@ -83,22 +83,22 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 
 ### Phase 2: Security Controls, AuthZ & Cryptographic Audit Trail
 *Target: OAuth 2.1, granular scopes, ledger allow-listing, tamper-evident audit log (Goals G2, G3)*  
-*Status: NEXT IN SPRINT*
+*Status: COMPLETED (100% — 13 tests passing)*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
-| `TASK-2.1` | `server/auth/tokens.py` | OAuth 2.1 token validation, JWT handling, PKCE verification, short-lived tokens. | `PLANNED` | `UNTESTED` |
-| `TASK-2.2` | `server/auth/scopes.py` | Scope checking middleware (`read:reports`, `read:ledgers`, `read:vouchers`, `read:stock`, `draft:vouchers`, `admin:users`). | `PLANNED` | `UNTESTED` |
-| `TASK-2.3` | `server/auth/allowlist.py` | Per-user ledger and group allow-list validator. Rejects unauthorized account access. | `PLANNED` | `UNTESTED` |
-| `TASK-2.4` | `server/audit/hash_chain.py` | HMAC-SHA256 append-only hash chaining engine (`prev_hash` -> `entry_hash`). | `PLANNED` | `UNTESTED` |
-| `TASK-2.5` | `server/auth/rate_limiter.py` | Tenant and user rate-limiter with token bucket algorithm. | `PLANNED` | `UNTESTED` |
-| `TASK-2.6` | `tests/test_auth_audit.py` | Unit and integration tests for scope denial, token expiration, and audit chain verification. | `PLANNED` | `UNTESTED` |
+| `TASK-2.1` | `server/auth/tokens.py` | OAuth 2.1 token issuance, validation, JWT handling, PKCE S256 verification, short-lived tokens. | `COMPLETED` | `TEST PASSING` |
+| `TASK-2.2` | `server/auth/scopes.py` | Scope checking middleware (`read:reports`, `read:ledgers`, `read:vouchers`, `draft:vouchers`, `admin:users`). Enforces `approve:vouchers` human-only invariant. | `COMPLETED` | `TEST PASSING` |
+| `TASK-2.3` | `server/auth/allowlist.py` | Per-user ledger and group allow-list validator. Rejects unauthorized account access with `SCOPE_DENIED`. | `COMPLETED` | `TEST PASSING` |
+| `TASK-2.4` | `server/audit/hash_chain.py` | HMAC-SHA256 append-only hash chaining engine (`prev_hash` -> `entry_hash`) and audit verifier. | `COMPLETED` | `TEST PASSING` |
+| `TASK-2.5` | `server/auth/rate_limiter.py` | Tenant and user rate-limiter with token bucket algorithm and daily draft quota. | `COMPLETED` | `TEST PASSING` |
+| `TASK-2.6` | `tests/test_auth_audit.py` | Automated unit and integration tests for scope denial, token expiration, allow-lists, rate limits, and audit tampering detection. | `COMPLETED` | `TEST PASSING` |
 
 ---
 
 ### Phase 3: Draft Engine, Rules Engine & Out-of-Band Approval Portal
 *Target: Draft-only write generation, anomaly detection, approval matching, idempotent posting (Goal G2)*  
-*Status: PLANNED*
+*Status: NEXT IN SPRINT*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
@@ -143,16 +143,13 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 ## 4. Test Coverage & Quality Gates
 
 See [Master Test Plan](TEST_PLAN.md) for the complete scenario-by-scenario specification across all 8 layers.
-Current Test Pass Rate: **100% (30 passed in 1.71s)**
+Current Test Pass Rate: **100% (43 passed in 1.40s)**
+- `tests/test_auth_audit.py`: 13 passed
 - `tests/test_decimal_math.py`: 7 passed
 - `tests/test_sanitizer.py`: 5 passed
 - `tests/test_read_tools.py`: 7 passed
 - `tests/test_reconciliation.py`: 6 passed
 - `tests/test_e2e_read_session.py`: 5 passed
-- `tests/test_decimal_math.py`: 7 passed
-- `tests/test_sanitizer.py`: 5 passed
-- `tests/test_reconciliation.py`: 6 passed
-- `tests/test_read_tools.py`: 7 passed
 
 ---
 
@@ -161,5 +158,7 @@ Current Test Pass Rate: **100% (30 passed in 1.71s)**
 | Date | Commit / Version | Description of Change | Author |
 |---|---|---|---|
 | **2026-11-17** | `e05086c` / `v0.1.0` | Initial repository baseline with architecture, specification, PostgreSQL schema, and security policies. | Vedansi |
-| **2026-11-17** | `v1.0.0-plan` | Authored Master Development Plan & Execution Tracker (`docs/DEVELOPMENT_PLAN.md`). | Vedansi |
-| **2026-11-17** | `v1.1.0-phase1` | Completed Phase 1: Decimal Math engine, Untrusted Text Sanitizer, Template Allow-list, XML Parser, Simulated Tally Server, Pydantic Read Schemas, Read Tools Handler, and Exact Reconciliation Suite (25 tests passing). | Vedansi |
+| **2026-11-17** | `e7906b3` / `v1.0.0-plan` | Authored Master Development Plan & Execution Tracker (`docs/DEVELOPMENT_PLAN.md`). | Vedansi |
+| **2026-11-17** | `dbf3899` / `v1.1.0-phase1` | Completed Phase 1: Decimal Math engine, Untrusted Text Sanitizer, Template Allow-list, XML Parser, Simulated Tally Server, Pydantic Read Schemas, Read Tools Handler, and Exact Reconciliation Suite (25 tests passing). | Vedansi |
+| **2026-11-20** | `v1.2.0-e2e` | Authored Master Test Plan (`docs/TEST_PLAN.md`), built End-to-End read session integration tests, added defense-in-depth debtor group filtering (30 tests passing). | Vedansi |
+| **2026-11-20** | `v1.3.0-phase2` | Completed Phase 2: OAuth 2.1 token engine, PKCE S256, human-only approval privilege separation, granular scopes middleware, ledger allow-list validator, HMAC-SHA256 hash-chained audit logging, sensitive data redaction, and token-bucket rate limiter (43 tests passing). | Vedansi |
