@@ -37,7 +37,13 @@ def dispatch_simulated_tally_xml(xml_text: str) -> str:
     if report_name == "Company Details":
         return _build_company_info_response()
     elif report_name == "List of Accounts":
-        return _build_ledgers_response()
+        group_elem = root.find(".//GROUP")
+        group_filter = (
+            group_elem.text.strip()
+            if group_elem is not None and group_elem.text
+            else ""
+        )
+        return _build_ledgers_response(group_filter)
     elif report_name == "Ledger Vouchers":
         ledger_name_elem = root.find(".//LEDGERNAME")
         ledger_name = (
@@ -77,9 +83,11 @@ def _build_company_info_response() -> str:
 </ENVELOPE>"""
 
 
-def _build_ledgers_response() -> str:
+def _build_ledgers_response(group_filter: str = "") -> str:
     items = []
     for l in CHART_OF_ACCOUNTS:
+        if group_filter and l["parent"].lower() != group_filter.lower():
+            continue
         dr_cr_op = "Dr" if l["is_debit"] else "Cr"
         dr_cr_cl = "Dr" if l["is_debit"] else "Cr"
         name_esc = xml_escape(str(l["name"]))

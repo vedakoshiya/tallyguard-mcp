@@ -48,6 +48,11 @@ class ReadToolsHandler:
         params = ListLedgersInput.model_validate(arguments or {})
         ledgers = self.client.list_ledgers(group_filter=params.group or "")
 
+        # Apply group filter as defense-in-depth
+        if params.group:
+            g_filter = params.group.lower()
+            ledgers = [l for l in ledgers if l["parent"].lower() == g_filter]
+
         # Apply name_prefix filter if supplied
         if params.name_prefix:
             prefix = params.name_prefix.lower()

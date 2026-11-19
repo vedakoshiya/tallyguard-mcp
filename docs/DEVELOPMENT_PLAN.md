@@ -143,7 +143,12 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 ## 4. Test Coverage & Quality Gates
 
 See [Master Test Plan](TEST_PLAN.md) for the complete scenario-by-scenario specification across all 8 layers.
-Current Test Pass Rate: **100% (25 passed in 1.04s)**
+Current Test Pass Rate: **100% (30 passed in 1.71s)**
+- `tests/test_decimal_math.py`: 7 passed
+- `tests/test_sanitizer.py`: 5 passed
+- `tests/test_read_tools.py`: 7 passed
+- `tests/test_reconciliation.py`: 6 passed
+- `tests/test_e2e_read_session.py`: 5 passed
 - `tests/test_decimal_math.py`: 7 passed
 - `tests/test_sanitizer.py`: 5 passed
 - `tests/test_reconciliation.py`: 6 passed
