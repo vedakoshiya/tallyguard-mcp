@@ -32,6 +32,21 @@ ALLOWED_TEMPLATE_IDS = {
 }
 
 
+class SecurityViolationError(Exception):
+    """Raised when an unauthorized template ID or arbitrary XML execution is attempted."""
+    pass
+
+
+def assert_template_allowed(template_id: str) -> None:
+    """Assert that template_id is within ALLOWED_TEMPLATE_IDS."""
+    if template_id not in ALLOWED_TEMPLATE_IDS:
+        raise SecurityViolationError(
+            f"SECURITY VIOLATION: Template ID '{template_id}' is not in the bridge allow-list. "
+            f"Arbitrary XML execution is prohibited."
+        )
+
+
+
 def _xml_escape(val: Any) -> str:
     """Safely escape values before interpolating into XML templates."""
     if val is None:
@@ -201,13 +216,10 @@ def render_template(template_id: str, params: Dict[str, Any]) -> str:
     """Validate template_id against allow-list and render XML safely.
 
     Raises:
-        ValueError: If template_id is not in ALLOWED_TEMPLATE_IDS or required params missing.
+        SecurityViolationError: If template_id is not in ALLOWED_TEMPLATE_IDS.
+        ValueError: If required params are missing.
     """
-    if template_id not in ALLOWED_TEMPLATE_IDS:
-        raise ValueError(
-            f"Security Exception: Template ID '{template_id}' is not in the bridge allow-list. "
-            f"Arbitrary XML execution is prohibited."
-        )
+    assert_template_allowed(template_id)
 
     company_name = params.get("company_name", "")
 

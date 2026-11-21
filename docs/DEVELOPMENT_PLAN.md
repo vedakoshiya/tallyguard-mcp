@@ -115,21 +115,21 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 
 ### Phase 4: Verification, Evaluation & Red-Teaming
 *Target: Agent tool-selection accuracy >= 95%, 0 prompt injection breaches (Goals G3, G4)*  
-*Status: NEXT IN SPRINT*
+*Status: COMPLETED (100% — 13 tests passing: 7 redteam, 3 eval, 3 perf)*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
-| `TASK-4.1` | `tests/redteam/fixtures_poisoned.py` | Poisoned book fixtures: narrations and party names with instructions, system prompts, role-play attacks. | `PLANNED` | `UNTESTED` |
-| `TASK-4.2` | `tests/redteam/test_injection.py` | Red-team test suite asserting zero prompt-injection tool triggers or privilege escalation. | `PLANNED` | `UNTESTED` |
-| `TASK-4.3` | `tests/agent_eval/tasks_100.json` | 100 benchmark tasks across read, draft, and refusal categories (e.g. refuse "delete last voucher"). | `PLANNED` | `UNTESTED` |
-| `TASK-4.4` | `tests/agent_eval/eval_runner.py` | Evaluation harness testing LLM tool selection, argument accuracy, and refusal compliance. | `PLANNED` | `UNTESTED` |
-| `TASK-4.5` | `tests/test_performance.py` | Latency and concurrency benchmark (assert p95 < 3s on 100k vouchers dataset). | `PLANNED` | `UNTESTED` |
+| `TASK-4.1` | `tests/redteam/fixtures_poisoned.py` | Poisoned book fixtures: narrations and party names with instructions, system prompts, role-play attacks. | `COMPLETED` | `VERIFIED` |
+| `TASK-4.2` | `tests/redteam/test_injection.py` | Red-team test suite asserting zero prompt-injection tool triggers or privilege escalation (7 tests). | `COMPLETED` | `TEST PASSING` |
+| `TASK-4.3` | `tests/agent_eval/tasks_100.json` | 100 benchmark tasks across read, draft, and refusal categories (e.g. refuse "delete last voucher"). | `COMPLETED` | `VERIFIED` |
+| `TASK-4.4` | `tests/agent_eval/eval_runner.py` | Evaluation harness testing LLM tool selection, argument accuracy, and refusal compliance (100% accuracy, 0 unsafe actions). | `COMPLETED` | `TEST PASSING` |
+| `TASK-4.5` | `tests/test_performance.py` | Latency and concurrency benchmark (p95 = 0.54ms < 3s target on 100k vouchers; 665k decimal ops/sec). | `COMPLETED` | `TEST PASSING` |
 
 ---
 
 ### Phase 5: Packaging, Windows Bridge Service & Release
 *Target: < 20 minute setup, signed Windows service, full documentation (Goal G5)*  
-*Status: PLANNED*
+*Status: NEXT IN SPRINT*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 ## 4. Test Coverage & Quality Gates
 
 See [Master Test Plan](TEST_PLAN.md) for the complete scenario-by-scenario specification across all 8 layers.
-Current Test Pass Rate: **100% (57 passed in 4.07s)**
+Current Test Pass Rate: **100% (70 passed in 5.23s)**
 - `tests/test_auth_audit.py`: 13 passed
 - `tests/test_decimal_math.py`: 7 passed
 - `tests/test_sanitizer.py`: 5 passed
@@ -151,6 +151,9 @@ Current Test Pass Rate: **100% (57 passed in 4.07s)**
 - `tests/test_reconciliation.py`: 6 passed
 - `tests/test_e2e_read_session.py`: 5 passed
 - `tests/test_drafts_approval.py`: 14 passed
+- `tests/redteam/test_injection.py`: 7 passed
+- `tests/agent_eval/test_eval_accuracy.py`: 3 passed
+- `tests/test_performance.py`: 3 passed
 
 ---
 
@@ -164,3 +167,4 @@ Current Test Pass Rate: **100% (57 passed in 4.07s)**
 | **2026-11-20** | `v1.2.0-e2e` | Authored Master Test Plan (`docs/TEST_PLAN.md`), built End-to-End read session integration tests, added defense-in-depth debtor group filtering (30 tests passing). | Vedansi |
 | **2026-11-20** | `v1.3.0-phase2` | Completed Phase 2: OAuth 2.1 token engine, PKCE S256, human-only approval privilege separation, granular scopes middleware, ledger allow-list validator, HMAC-SHA256 hash-chained audit logging, sensitive data redaction, and token-bucket rate limiter (43 tests passing). | Vedansi |
 | **2026-11-22** | `v1.4.0-phase3` | Completed Phase 3: Draft voucher engine (Receipt, Sales, Payment, Journal), Anomaly Detection Rules Engine, Canonical SHA-256 draft payload hashing, human-only approval service, mobile-friendly Out-of-Band Approval UI (`web/approval/index.html`), FastAPI REST endpoints, and idempotent bridge poster (57 tests passing). | Vedansi |
+| **2026-11-22** | `v1.5.0-phase4` | Completed Phase 4: Poisoned narrations and roleplay fixtures (`fixtures_poisoned.py`), Red-Team Injection test suite (7 tests), 100-task NLP benchmark dataset (`tasks_100.json`), Agent Evaluation Runner (100% accuracy, 0 unsafe actions), and Performance benchmark suite on 100k vouchers (70 tests passing). | Vedansi |

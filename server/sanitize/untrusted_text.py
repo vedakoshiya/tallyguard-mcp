@@ -23,12 +23,19 @@ CONTROL_CHAR_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 # High-risk instruction-like patterns for prompt injection detection
 INJECTION_PATTERNS = [
     (r"(?i)\bignore\s+(all\s+)?(previous|prior|above)\s+instructions\b", "instruction_override"),
-    (r"(?i)\b(system\s+prompt|system\s+instructions)\b", "system_prompt_reference"),
-    (r"(?i)\[/?(system|inst|assistant)\]", "role_markup"),
+    (r"(?i)\b(system\s+prompt|system\s+instructions?)\b", "system_prompt_reference"),
+    (r"(?i)\[/?(system|inst|assistant)", "role_markup"),
     (r"(?i)<(system|instructions?|prompt)>.*?</\1>", "xml_instruction_tag"),
     (r"(?i)\b(you\s+are\s+now|act\s+as\s+a)\b", "roleplay_prompt"),
-    (r"(?i)\b(delete|drop|wipe)\s+(the\s+)?(last\s+)?(voucher|table|database)\b", "destructive_command"),
-    (r"(?i)\b(post|create|transfer)\s+(a\s+)?(payment|receipt|voucher)\s+of\b", "unauthorized_transaction_instruction"),
+    (r"(?i)\b(dan|do\s+anything\s+now|hypothetical\s+simulation|jailbreak)\b", "roleplay_prompt"),
+    (r"(?i)\b(override|bypass)\s+.*(approval|safety|portal|guidelines|check)\b", "instruction_override"),
+    (r"(?i)\b(override_scope|approve:vouchers)\b", "instruction_override"),
+    (r"(?i)```(json|xml)?", "markup_code_injection"),
+    (r"(?i)\b(delete|drop|wipe)\s+.*?\b(vouchers?|tables?|databases?|ledgers?)\b", "destructive_command"),
+    (r"(?i)\b(post|create|transfer)\s+(a\s+)?(payment|receipt|voucher)\s+(of|to)\b", "unauthorized_transaction_instruction"),
+    (r"(?i)</?untrusted_text>", "delimiter_injection"),
+    (r"(?i)</?(voucher|envelope|importdata|requestdata|narration|body|header)>", "xml_markup_injection"),
+    (r"(?i)\b(print\s+out|export|dump)\s+.*(secret|key|password|credential|jwt|pan)\b", "data_exfiltration_pattern"),
     (r"(?i)\bexfiltrat(e|ion)|send\s+to\s+https?://", "data_exfiltration_pattern"),
 ]
 
@@ -90,6 +97,11 @@ def sanitize_untrusted_text(
     if len(cleaned_text) != original_length:
         sanitized = True
         flags.append("stripped_control_characters")
+
+    # 2. Neutralize delimiter escape sequences
+    if "</untrusted_text>" in cleaned_text or "<untrusted_text>" in cleaned_text:
+        cleaned_text = cleaned_text.replace("</untrusted_text>", "&lt;/untrusted_text&gt;").replace("<untrusted_text>", "&lt;untrusted_text&gt;")
+        sanitized = True
 
     # 2. Check for prompt injection and instruction-like patterns
     for pattern, flag_name in INJECTION_PATTERNS:

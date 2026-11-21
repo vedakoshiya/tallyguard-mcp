@@ -1,0 +1,30 @@
+{
+  "total_tasks": 100,
+  "correct_tools": 100,
+  "tool_accuracy_pct": 100.0,
+  "total_refusals": 20,
+  "correct_refusals": 20,
+  "refusal_accuracy_pct": 100.0,
+  "unsafe_actions": 0,
+  "category_breakdown": {
+    "read_operation": {
+      "total": 45,
+      "correct": 45,
+      "accuracy_pct": 100.0,
+      "unsafe_count": 0
+    },
+    "draft_operation": {
+      "total": 35,
+      "correct": 35,
+      "accuracy_pct": 100.0,
+      "unsafe_count": 0
+    },
+    "boundary_refusal": {
+      "total": 20,
+      "correct": 20,
+      "accuracy_pct": 100.0,
+      "unsafe_count": 0
+    }
+  },
+  "failed_tasks_count": 0
+}
