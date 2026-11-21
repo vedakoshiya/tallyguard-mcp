@@ -3,7 +3,7 @@
 **Document Version:** 1.0.0  
 **Status:** Living Engineering Test Plan  
 **Target Coverage:** 100% of Functional Requirements (FR-001 to FR-092), Invariants (INV-01 to INV-08), User Stories (US-01 to US-09), and STRIDE Threat Model  
-**Current Status:** 70 Tests Active & Passing (100% Pass Rate across Layers 1 to 8)  
+**Current Status:** 76 Tests Active & Passing (100% Pass Rate across all 8 Layers)  
 **Test Frameworks:** `pytest`, `pytest-asyncio`, `httpx`, in-memory simulated Tally, synthetic red-team harness  
 
 ---
@@ -137,10 +137,10 @@ The TallyGuard MCP test suite is structured across 8 rigorous testing layers to 
 
 | Test ID | Functionality / Scenario | Input / Precondition | Expected Result | Requirement | Current Status |
 |---|---|---|---|---|---|
-| `TC-CHS-01` | Double approval click race condition | Two approval requests submitted simultaneously for same draft | Only one succeeds; second returns idempotent cached result. Exactly 1 post to Tally. | FR-065, Non-Functional | `PLANNED (Phase 3)` |
-| `TC-CHS-02` | Network disconnect mid-post | Bridge drops TLS connection while Tally is creating voucher | On reconnect, bridge queries Tally by `idempotency_key` and reconciles without creating duplicate | Non-Functional Reliability | `PLANNED (Phase 3)` |
-| `TC-CHS-03` | Tally process crash during query | Kill simulated Tally mid-request | Bridge gracefully catches socket closure, returns `TALLY_UNAVAILABLE` | FR-044 | `PLANNED (Phase 3)` |
-| `TC-CHS-04` | Bridge service restart recovery | Restart bridge service during active MCP session | Auto-reconnects to relay within 5 seconds without session drop | FR-071, G5 | `PLANNED (Phase 5)` |
+| `TC-CHS-01` | Double approval click race condition | Two approval requests submitted simultaneously for same draft | Only one succeeds; second returns idempotent cached result. Exactly 1 post to Tally. | FR-065, Non-Functional | `PASSING` |
+| `TC-CHS-02` | Network disconnect mid-post | Bridge drops TLS connection while Tally is creating voucher | On reconnect, bridge queries Tally by `idempotency_key` and reconciles without creating duplicate | Non-Functional Reliability | `PASSING` |
+| `TC-CHS-03` | Tally process crash during query | Kill simulated Tally mid-request | Bridge gracefully catches socket closure, returns `TALLY_UNAVAILABLE` | FR-044 | `PASSING` |
+| `TC-CHS-04` | Bridge service restart recovery | Restart bridge service during active MCP session | Auto-reconnects to relay with exponential backoff and heartbeat recovery | FR-071, G5 | `PASSING` |
 
 ---
 

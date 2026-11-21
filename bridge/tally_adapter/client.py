@@ -45,12 +45,26 @@ class TallyAdapterClient:
         company_name: str = "Surat Textile Traders Pvt Ltd",
         timeout_seconds: float = 10.0,
         transport: Optional[httpx.BaseTransport] = None,
+        endpoint: Optional[str] = None,
+        timeout: Optional[float] = None,
     ):
-        self.host = host
-        self.port = port
+        if endpoint:
+            self.endpoint = endpoint
+            # Extract host and port if feasible
+            cleaned = endpoint.replace("http://", "").replace("https://", "").rstrip("/")
+            if ":" in cleaned:
+                self.host, port_str = cleaned.split(":", 1)
+                self.port = int(port_str) if port_str.isdigit() else 9000
+            else:
+                self.host = cleaned
+                self.port = 9000
+        else:
+            self.host = host
+            self.port = port
+            self.endpoint = f"http://{host}:{port}"
+
         self.company_name = company_name
-        self.endpoint = f"http://{host}:{port}"
-        self.timeout = timeout_seconds
+        self.timeout = timeout if timeout is not None else timeout_seconds
         self.transport = transport
 
     def _execute_template(self, template_id: str, params: Dict[str, Any]) -> str:
@@ -113,3 +127,8 @@ class TallyAdapterClient:
         """Fetch stock inventory summary."""
         xml_resp = self._execute_template(TEMPLATE_STOCK_SUMMARY, {"as_on_date": as_on_date})
         return parse_stock_summary(xml_resp)
+
+
+# Alias for backward and forward compatibility
+TallyClient = TallyAdapterClient
+

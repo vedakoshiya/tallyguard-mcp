@@ -152,6 +152,7 @@ tallyguard-mcp/
 
 - [Master Development Plan & Progress Tracker](docs/DEVELOPMENT_PLAN.md)
 - [Master Test Plan (All Scenarios & Layers)](docs/TEST_PLAN.md)
+- [Operational Runbooks](docs/RUNBOOKS.md)
 - [Full Specification](docs/SPECIFICATION.md)
 - [Implementation Guide](docs/IMPLEMENTATION.md)
 - [Contributing Guidelines](CONTRIBUTING.md)

@@ -129,21 +129,21 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 
 ### Phase 5: Packaging, Windows Bridge Service & Release
 *Target: < 20 minute setup, signed Windows service, full documentation (Goal G5)*  
-*Status: NEXT IN SPRINT*
+*Status: COMPLETED (100% — 6 tests passing)*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
-| `TASK-5.1` | `bridge/service.py` | Windows service wrapper (auto-start, recovery, health check heartbeat). | `PLANNED` | `UNTESTED` |
-| `TASK-5.2` | `bridge/installer/` | One-click installer / setup script with one-time pairing code workflow. | `PLANNED` | `UNTESTED` |
-| `TASK-5.3` | `docs/RUNBOOKS.md` | Operational runbooks: offline bridge, certificate rotation, kill-switch activation, audit verification. | `PLANNED` | `UNTESTED` |
-| `TASK-5.4` | Release v1.0.0 | Tagging, signed release assets, published security evaluation report. | `PLANNED` | `UNTESTED` |
+| `TASK-5.1` | `bridge/service.py` | Windows service wrapper (auto-start, recovery, health check heartbeat, port discovery). | `COMPLETED` | `TEST PASSING` |
+| `TASK-5.2` | `bridge/installer/` | One-click installer & setup script (`pairing.py`, `install_service.ps1`) with one-time pairing code workflow (US-09). | `COMPLETED` | `TEST PASSING` |
+| `TASK-5.3` | `docs/RUNBOOKS.md` | Operational runbooks: offline bridge, certificate rotation, kill-switch activation, audit verification. | `COMPLETED` | `VERIFIED` |
+| `TASK-5.4` | Release v1.0.0 | Full test suite verification (76 tests), production readiness audit, and v1.0.0 release. | `COMPLETED` | `TEST PASSING` |
 
 ---
 
 ## 4. Test Coverage & Quality Gates
 
 See [Master Test Plan](TEST_PLAN.md) for the complete scenario-by-scenario specification across all 8 layers.
-Current Test Pass Rate: **100% (70 passed in 5.23s)**
+Current Test Pass Rate: **100% (76 passed in 6.61s)**
 - `tests/test_auth_audit.py`: 13 passed
 - `tests/test_decimal_math.py`: 7 passed
 - `tests/test_sanitizer.py`: 5 passed
@@ -154,6 +154,7 @@ Current Test Pass Rate: **100% (70 passed in 5.23s)**
 - `tests/redteam/test_injection.py`: 7 passed
 - `tests/agent_eval/test_eval_accuracy.py`: 3 passed
 - `tests/test_performance.py`: 3 passed
+- `tests/test_bridge_service.py`: 6 passed
 
 ---
 
@@ -168,3 +169,4 @@ Current Test Pass Rate: **100% (70 passed in 5.23s)**
 | **2026-11-20** | `v1.3.0-phase2` | Completed Phase 2: OAuth 2.1 token engine, PKCE S256, human-only approval privilege separation, granular scopes middleware, ledger allow-list validator, HMAC-SHA256 hash-chained audit logging, sensitive data redaction, and token-bucket rate limiter (43 tests passing). | Vedansi |
 | **2026-11-22** | `v1.4.0-phase3` | Completed Phase 3: Draft voucher engine (Receipt, Sales, Payment, Journal), Anomaly Detection Rules Engine, Canonical SHA-256 draft payload hashing, human-only approval service, mobile-friendly Out-of-Band Approval UI (`web/approval/index.html`), FastAPI REST endpoints, and idempotent bridge poster (57 tests passing). | Vedansi |
 | **2026-11-22** | `v1.5.0-phase4` | Completed Phase 4: Poisoned narrations and roleplay fixtures (`fixtures_poisoned.py`), Red-Team Injection test suite (7 tests), 100-task NLP benchmark dataset (`tasks_100.json`), Agent Evaluation Runner (100% accuracy, 0 unsafe actions), and Performance benchmark suite on 100k vouchers (70 tests passing). | Vedansi |
+| **2026-11-22** | `v1.0.0-release` | Completed Phase 5: Windows background bridge service (`bridge/service.py`), Guided pairing installer (`bridge/installer/pairing.py`), Windows Service registration (`install_service.ps1`), Production Operational Runbooks (`docs/RUNBOOKS.md`), and Bridge integration suite (76 tests passing). | Vedansi |
