@@ -3,7 +3,7 @@
 **Document Version:** 1.0.0  
 **Status:** Living Engineering Test Plan  
 **Target Coverage:** 100% of Functional Requirements (FR-001 to FR-092), Invariants (INV-01 to INV-08), User Stories (US-01 to US-09), and STRIDE Threat Model  
-**Current Status:** 25 Tests Active & Passing (Phase 1 Baseline)  
+**Current Status:** 57 Tests Active & Passing (100% Pass Rate across Layers 1 to 5)  
 **Test Frameworks:** `pytest`, `pytest-asyncio`, `httpx`, in-memory simulated Tally, synthetic red-team harness  
 
 ---
@@ -114,22 +114,22 @@ The TallyGuard MCP test suite is structured across 8 rigorous testing layers to 
 
 | Test ID | Functionality / Scenario | Input / Precondition | Expected Result | Requirement | Current Status |
 |---|---|---|---|---|---|
-| `TC-DFT-01` | Draft Receipt Creation (No Direct Post) | Call `draft_receipt_voucher(party="Patel", amount="20000.00", ...)` | Draft created in DB (`pending_approval`), returns `draft_id`, diff, `approval_url`. Zero Tally writes. | FR-020, FR-024, US-04 | `PLANNED (Phase 3)` |
-| `TC-DFT-02` | Canonical Payload Hashing | Create draft voucher | `drafts.payload_hash == SHA256(canonical_json(payload))` | FR-065, INV-04 | `PLANNED (Phase 3)` |
-| `TC-DFT-03` | Draft Sales Voucher lines | Call `draft_sales_voucher` with items, rates, taxes | Validates balanced lines, outputs draft proposal | FR-021 | `PLANNED (Phase 3)` |
-| `TC-DFT-04` | Cancel own draft | Creator calls `cancel_draft(draft_id)` | Draft status transitions to `cancelled` | FR-023 | `PLANNED (Phase 3)` |
-| `TC-DFT-05` | Cancel other user's draft rejection | User B attempts to cancel User A's draft | Fails with `UNAUTHORIZED` / `SCOPE_DENIED` | FR-023 | `PLANNED (Phase 3)` |
-| `TC-RUL-01` | High amount threshold flag | Draft amount > ₹50,000 threshold | Flags `["amount_above_threshold"]`, requires second approver | FR-062, FR-063 | `PLANNED (Phase 3)` |
-| `TC-RUL-02` | New party reference flag | Party name not in Chart of Accounts | Flags `["new_party_reference"]` | FR-062 | `PLANNED (Phase 3)` |
-| `TC-RUL-03` | Weekend / Backdated entry flag | Voucher date 60 days in the past or Sunday | Flags `["backdated_entry"]` or `["weekend_entry"]` | FR-062 | `PLANNED (Phase 3)` |
-| `TC-RUL-04` | Duplicate voucher detection | Exact same party, amount, and date as existing voucher | Flags `["suspected_duplicate_voucher"]` | FR-062 | `PLANNED (Phase 3)` |
-| `TC-APP-01` | Out-of-band approval rendering | `GET /approve/{draft_id}` by authenticated human | Renders HTML/JSON showing Dr/Cr lines, diff, and flags | FR-061, US-05 | `PLANNED (Phase 3)` |
-| `TC-APP-02` | Successful Approval & Hash Equality | Approver submits decision `approve` | `approvals.payload_hash == drafts.payload_hash`, status -> `approved` | FR-065, INV-04 | `PLANNED (Phase 3)` |
-| `TC-APP-03` | Tampered Draft Approval Block | Modify draft payload in DB after creation | Approval attempt fails cryptographic check; marks draft `failed` | FR-065, STRIDE | `PLANNED (Phase 3)` |
-| `TC-APP-04` | Draft Rejection | Approver submits decision `reject` | Status transitions to `rejected`, no bridge post triggered | FR-060 | `PLANNED (Phase 3)` |
-| `TC-APP-05` | Draft Expiration | Draft older than 48 hours | Status transitions to `expired`; approval rejected | FR-064 | `PLANNED (Phase 3)` |
-| `TC-PST-01` | Bridge Idempotent Posting | Bridge receives approved draft | Submits with `idempotency_key`, confirms Tally voucher number `REC-2026-09`, updates draft to `posted` | FR-065, US-05 | `PLANNED (Phase 3)` |
-| `TC-PST-02` | Posting verification mismatch | Tally records different amount than approved payload | Draft status set to `failed`, administrator alert emitted | FR-065 | `PLANNED (Phase 3)` |
+| `TC-DFT-01` | Draft Receipt Creation (No Direct Post) | Call `draft_receipt_voucher(party="Patel", amount="20000.00", ...)` | Draft created in DB (`pending_approval`), returns `draft_id`, diff, `approval_url`. Zero Tally writes. | FR-020, FR-024, US-04 | `PASSING` |
+| `TC-DFT-02` | Canonical Payload Hashing | Create draft voucher | `drafts.payload_hash == SHA256(canonical_json(payload))` | FR-065, INV-04 | `PASSING` |
+| `TC-DFT-03` | Draft Sales Voucher lines | Call `draft_sales_voucher` with items, rates, taxes | Validates balanced lines, outputs draft proposal | FR-021 | `PASSING` |
+| `TC-DFT-04` | Cancel own draft | Creator calls `cancel_draft(draft_id)` | Draft status transitions to `cancelled` | FR-023 | `PASSING` |
+| `TC-DFT-05` | Cancel other user's draft rejection | User B attempts to cancel User A's draft | Fails with `UNAUTHORIZED` / `SCOPE_DENIED` | FR-023 | `PASSING` |
+| `TC-RUL-01` | High amount threshold flag | Draft amount > ₹50,000 threshold | Flags `["amount_above_threshold"]`, requires second approver | FR-062, FR-063 | `PASSING` |
+| `TC-RUL-02` | New party reference flag | Party name not in Chart of Accounts | Flags `["new_party_reference"]` | FR-062 | `PASSING` |
+| `TC-RUL-03` | Weekend / Backdated entry flag | Voucher date 60 days in the past or Sunday | Flags `["backdated_entry"]` or `["weekend_entry"]` | FR-062 | `PASSING` |
+| `TC-RUL-04` | Duplicate voucher detection | Exact same party, amount, and date as existing voucher | Flags `["suspected_duplicate_voucher"]` | FR-062 | `PASSING` |
+| `TC-APP-01` | Out-of-band approval rendering | `GET /approve/{draft_id}` by authenticated human | Renders HTML/JSON showing Dr/Cr lines, diff, and flags | FR-061, US-05 | `PASSING` |
+| `TC-APP-02` | Successful Approval & Hash Equality | Approver submits decision `approve` | `approvals.payload_hash == drafts.payload_hash`, status -> `approved` | FR-065, INV-04 | `PASSING` |
+| `TC-APP-03` | Tampered Draft Approval Block | Modify draft payload in DB after creation | Approval attempt fails cryptographic check; marks draft `failed` | FR-065, STRIDE | `PASSING` |
+| `TC-APP-04` | Draft Rejection | Approver submits decision `reject` | Status transitions to `rejected`, no bridge post triggered | FR-060 | `PASSING` |
+| `TC-APP-05` | Draft Expiration | Draft older than 48 hours | Status transitions to `expired`; approval rejected | FR-064 | `PASSING` |
+| `TC-PST-01` | Bridge Idempotent Posting | Bridge receives approved draft | Submits with `idempotency_key`, confirms Tally voucher number `REC-2026-09`, updates draft to `posted` | FR-065, US-05 | `PASSING` |
+| `TC-PST-02` | Posting verification mismatch | Tally records different amount than approved payload | Draft status set to `failed`, administrator alert emitted | FR-065 | `PASSING` |
 
 ---
 

@@ -25,6 +25,31 @@ def dispatch_simulated_tally_xml(xml_text: str) -> str:
     """Core logic: Parse incoming Tally XML request and return Tally XML response."""
     try:
         root = ET.fromstring(xml_text)
+        req_elem = root.find(".//TALLYREQUEST")
+        req_type = req_elem.text.strip() if req_elem is not None and req_elem.text else ""
+
+        if req_type == "Import Data":
+            # Emulate successful voucher import
+            vch_type_elem = root.find(".//VOUCHERTYPENAME")
+            vch_type = vch_type_elem.text.strip() if vch_type_elem is not None and vch_type_elem.text else "VCH"
+            prefix = (
+                "REC"
+                if "receipt" in vch_type.lower()
+                else "SAL"
+                if "sales" in vch_type.lower()
+                else "PAY"
+                if "payment" in vch_type.lower()
+                else "JRN"
+                if "journal" in vch_type.lower()
+                else "VCH"
+            )
+            return f"""<RESPONSE>
+  <CREATED>1</CREATED>
+  <ALTERED>0</ALTERED>
+  <ERRORS>0</ERRORS>
+  <VOUCHERNUMBER>{prefix}-2026-88</VOUCHERNUMBER>
+</RESPONSE>"""
+
         report_name_elem = root.find(".//REPORTNAME")
         report_name = (
             report_name_elem.text.strip()

@@ -98,24 +98,24 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 
 ### Phase 3: Draft Engine, Rules Engine & Out-of-Band Approval Portal
 *Target: Draft-only write generation, anomaly detection, approval matching, idempotent posting (Goal G2)*  
-*Status: NEXT IN SPRINT*
+*Status: COMPLETED (100% — 14 tests passing)*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
-| `TASK-3.1` | `server/mcp/schemas/draft_schemas.py` | Pydantic v2 models for receipt, sales, payment, and journal drafts. | `PLANNED` | `UNTESTED` |
-| `TASK-3.2` | `server/drafts/hashing.py` | Canonical JSON serialization and SHA-256 payload hash calculation. | `PLANNED` | `UNTESTED` |
-| `TASK-3.3` | `server/drafts/rules_engine.py` | Anomaly rules engine: threshold check, new party detection, backdated entry flag, duplicate check. | `PLANNED` | `UNTESTED` |
-| `TASK-3.4` | `server/mcp/tools/draft_tools.py` | Write tool handlers: `draft_receipt_voucher`, `draft_sales_voucher`, `draft_payment_voucher`, `draft_journal_voucher`, `get_draft_status`, `cancel_draft`. | `PLANNED` | `UNTESTED` |
-| `TASK-3.5` | `server/api/approval_api.py` | REST API: `GET /approve/{draft_id}` (render), `POST /approve/{draft_id}` (decision). Authenticated human-only. | `PLANNED` | `UNTESTED` |
-| `TASK-3.6` | `web/approval/` | Mobile-friendly, clean HTML/React approval UI displaying Dr/Cr lines and anomaly flags. | `PLANNED` | `UNTESTED` |
-| `TASK-3.7` | `bridge/tally_adapter/poster.py` | Idempotent voucher poster submitting approved drafts to Tally and verifying returned voucher numbers. | `PLANNED` | `UNTESTED` |
-| `TASK-3.8` | `tests/test_approval_lifecycle.py` | End-to-end tests: creation -> pending -> approval -> bridge post -> verification -> posted status. | `PLANNED` | `UNTESTED` |
+| `TASK-3.1` | `server/mcp/schemas/draft_schemas.py` | Pydantic v2 models for receipt, sales, payment, and journal drafts (`extra="forbid"`). | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.2` | `server/drafts/hashing.py` | Canonical JSON serialization and SHA-256 payload hash calculation (`verify_payload_hash`). | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.3` | `server/drafts/rules_engine.py` | Anomaly rules engine: threshold check, new party detection, backdated entry flag, duplicate check. | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.4` | `server/mcp/tools/draft_tools.py` | Write tool handlers: `draft_receipt_voucher`, `draft_sales_voucher`, `draft_payment_voucher`, `draft_journal_voucher`, `get_draft_status`, `cancel_draft`. | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.5` | `server/api/approval_api.py` | REST API: `GET /approve/{draft_id}` (render), `POST /approve/{draft_id}` (decision). Authenticated human-only. | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.6` | `web/approval/` | Mobile-friendly, clean HTML/React approval UI displaying Dr/Cr lines and anomaly flags (`web/approval/index.html`). | `COMPLETED` | `VERIFIED` |
+| `TASK-3.7` | `bridge/tally_adapter/poster.py` | Idempotent voucher poster submitting approved drafts to Tally and verifying returned voucher numbers. | `COMPLETED` | `TEST PASSING` |
+| `TASK-3.8` | `tests/test_drafts_approval.py` | End-to-end tests: creation -> pending -> approval -> bridge post -> verification -> posted status (14 tests). | `COMPLETED` | `TEST PASSING` |
 
 ---
 
 ### Phase 4: Verification, Evaluation & Red-Teaming
 *Target: Agent tool-selection accuracy >= 95%, 0 prompt injection breaches (Goals G3, G4)*  
-*Status: PLANNED*
+*Status: NEXT IN SPRINT*
 
 | Task ID | Component / File | Description & Requirements | Status | Tested |
 |---|---|---|---|---|
@@ -143,13 +143,14 @@ Whenever any code, schema, rule, or test is developed, modified, or verified:
 ## 4. Test Coverage & Quality Gates
 
 See [Master Test Plan](TEST_PLAN.md) for the complete scenario-by-scenario specification across all 8 layers.
-Current Test Pass Rate: **100% (43 passed in 1.40s)**
+Current Test Pass Rate: **100% (57 passed in 4.07s)**
 - `tests/test_auth_audit.py`: 13 passed
 - `tests/test_decimal_math.py`: 7 passed
 - `tests/test_sanitizer.py`: 5 passed
 - `tests/test_read_tools.py`: 7 passed
 - `tests/test_reconciliation.py`: 6 passed
 - `tests/test_e2e_read_session.py`: 5 passed
+- `tests/test_drafts_approval.py`: 14 passed
 
 ---
 
@@ -162,3 +163,4 @@ Current Test Pass Rate: **100% (43 passed in 1.40s)**
 | **2026-11-17** | `dbf3899` / `v1.1.0-phase1` | Completed Phase 1: Decimal Math engine, Untrusted Text Sanitizer, Template Allow-list, XML Parser, Simulated Tally Server, Pydantic Read Schemas, Read Tools Handler, and Exact Reconciliation Suite (25 tests passing). | Vedansi |
 | **2026-11-20** | `v1.2.0-e2e` | Authored Master Test Plan (`docs/TEST_PLAN.md`), built End-to-End read session integration tests, added defense-in-depth debtor group filtering (30 tests passing). | Vedansi |
 | **2026-11-20** | `v1.3.0-phase2` | Completed Phase 2: OAuth 2.1 token engine, PKCE S256, human-only approval privilege separation, granular scopes middleware, ledger allow-list validator, HMAC-SHA256 hash-chained audit logging, sensitive data redaction, and token-bucket rate limiter (43 tests passing). | Vedansi |
+| **2026-11-22** | `v1.4.0-phase3` | Completed Phase 3: Draft voucher engine (Receipt, Sales, Payment, Journal), Anomaly Detection Rules Engine, Canonical SHA-256 draft payload hashing, human-only approval service, mobile-friendly Out-of-Band Approval UI (`web/approval/index.html`), FastAPI REST endpoints, and idempotent bridge poster (57 tests passing). | Vedansi |
