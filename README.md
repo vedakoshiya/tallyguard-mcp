@@ -1,9 +1,12 @@
 # TallyGuard MCP
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/vedakoshiya/tallyguard-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/vedakoshiya/tallyguard-mcp/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/vedakoshiya/tallyguard-mcp?color=blue)](https://github.com/vedakoshiya/tallyguard-mcp/releases)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![MCP Standard](https://img.shields.io/badge/MCP-v1.2%2B-green.svg)](https://modelcontextprotocol.io)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Security Policy](https://img.shields.io/badge/Security-Policy-brightgreen.svg)](SECURITY.md)
 
 **A Governed Model Context Protocol (MCP) Server for Safe, Read-Reconciled, and Draft-Only AI Access to Tally Accounting Data.**
 
@@ -156,6 +159,7 @@ tallyguard-mcp/
 - [Full Specification](docs/SPECIFICATION.md)
 - [Implementation Guide](docs/IMPLEMENTATION.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 

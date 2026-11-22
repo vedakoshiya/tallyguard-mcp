@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a reproducible problem or unexpected behavior in TallyGuard MCP
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please ensure that you do NOT include sensitive accounting data, credentials, or proprietary ledger info. If you are reporting a security vulnerability, please refer to our [Security Policy](https://github.com/vedakoshiya/tallyguard-mcp/blob/main/SECURITY.md).
+  - type: input
+    id: tally-version
+    attributes:
+      label: Tally Prime / ERP Version
+      description: What version of Tally are you connecting to? (e.g., Tally Prime 4.1, Tally Prime 3.0, Tally ERP 9)
+      placeholder: "e.g., Tally Prime Release 4.1"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment & Python Version
+      description: What OS and Python version are you using?
+      placeholder: "Windows 11 / Python 3.11.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the issue.
+      placeholder: |
+        1. Start Tally Prime with ODBC/XML enabled on port 9000
+        2. Launch TallyGuard MCP server with `python -m server.main`
+        3. Issue read tool query `get_receivables_ageing`...
+        4. Observe error...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized Logs or Error Traceback
+      description: Please paste any relevant console logs or traceback (redact tokens, keys, and customer party names).
+      render: shell

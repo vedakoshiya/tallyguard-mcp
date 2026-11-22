@@ -1,0 +1,39 @@
+name: Feature Request
+description: Propose a new feature, read tool, or enhancement for TallyGuard MCP
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome proposals for new MCP tools, safety rules, or platform integrations! Note that in accordance with TallyGuard MCP core invariants, **all direct write capabilities into Tally are strictly prohibited** and write operations must adhere to the draft-and-approval pattern.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of the problem or accounting workflow you want to address.
+      placeholder: "I'm always frustrated when AI assistants cannot..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution or Tool Specification
+      description: Describe the solution, including proposed tool names, parameters, and output format.
+      placeholder: "Add a read tool `get_cost_centre_breakdown` with parameters..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: A description of any alternative solutions or workarounds you've considered.
+  - type: checkboxes
+    id: invariants-acknowledgement
+    attributes:
+      label: Governance Invariants
+      options:
+        - label: This proposed feature preserves exact decimal math (no floating point math).
+          required: true
+        - label: This proposed feature does not bypass the out-of-band human approval mechanism for voucher creation.
+          required: true
