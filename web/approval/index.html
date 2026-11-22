@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TallyGuard — Out-of-Band Voucher Approval</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --success: #15803d;
+      --success-hover: #166534;
+      --danger: #b91c1c;
+      --danger-hover: #991b1b;
+      --warning: #b45309;
+      --warning-bg: #fffbeb;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-pending {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .badge-approved {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .badge-rejected {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .meta-item label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .meta-item .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .amount-highlight {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 8px 0;
+    }
+
+    /* Accounting Entry Table */
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    th.num, td.num {
+      text-align: right;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Anomaly Alert */
+    .alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .alert-warning {
+      background: var(--warning-bg);
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .alert-title {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .pill {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      color: #78350f;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Form & Action Buttons */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label.input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s ease-in-out;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-approve {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-approve:hover:not(:disabled) {
+      background: var(--success-hover);
+    }
+
+    .btn-reject {
+      background: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fca5a5;
+    }
+
+    .btn-reject:hover:not(:disabled) {
+      background: #fecaca;
+    }
+
+    .security-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+
+    .security-note code {
+      font-family: monospace;
+      background: #e2e8f0;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 480px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="brand-logo">T</div>
+        <div>
+          <div class="brand-title">TallyGuard</div>
+          <div style="font-size: 11px; color: var(--text-muted);">Governed AI Access Gateway</div>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge badge-pending">Pending Review</div>
+    </div>
+
+    <!-- Alert / Risk Warning -->
+    <div id="riskCard" class="alert alert-warning" style="display: none;">
+      <div class="alert-title">
+        <span>⚠️</span> <span id="riskHeading">Review Flags Detected</span>
+      </div>
+      <div id="riskDetails">Financial anomaly rules require manual confirmation.</div>
+      <div class="pill-list" id="flagsContainer"></div>
+    </div>
+
+    <!-- Voucher Details Card -->
+    <div class="card">
+      <div class="card-title">Voucher Draft Proposal</div>
+      <div class="amount-highlight" id="totalAmount">₹0.00</div>
+      
+      <div class="meta-grid">
+        <div class="meta-item">
+          <label>Voucher Type</label>
+          <div class="value" id="voucherType">—</div>
+        </div>
+        <div class="meta-item">
+          <label>Voucher Date</label>
+          <div class="value" id="voucherDate">—</div>
+        </div>
+        <div class="meta-item">
+          <label>Primary Account / Party</label>
+          <div class="value" id="partyName">—</div>
+        </div>
+        <div class="meta-item">
+          <label>Draft ID</label>
+          <div class="value" id="draftIdDisplay" style="font-family: monospace;">—</div>
+        </div>
+      </div>
+
+      <div class="meta-item" style="margin-bottom: 12px;">
+        <label>Narration / Remarks</label>
+        <div class="value" id="voucherNarration" style="font-style: italic; color: #475569;">None</div>
+      </div>
+
+      <!-- Accounting Breakdown -->
+      <label class="input-label" style="margin-top: 16px;">Ledger Breakdown (Dr / Cr Entries)</label>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Ledger Account</th>
+              <th class="num">Debit (Dr ₹)</th>
+              <th class="num">Credit (Cr ₹)</th>
+            </tr>
+          </thead>
+          <tbody id="linesTableBody">
+            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading draft entries...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="card" id="actionCard">
+      <div class="form-group">
+        <label class="input-label" for="approverNote">Approver Remarks / Reason (Optional)</label>
+        <textarea id="approverNote" placeholder="Enter remarks or approval notes..."></textarea>
+      </div>
+
+      <div class="action-grid">
+        <button id="btnReject" class="btn-reject" onclick="submitDecision('reject')">
+          ✖ Reject Draft
+        </button>
+        <button id="btnApprove" class="btn-approve" onclick="submitDecision('approve')">
+          ✔ Approve & Post to Tally
+        </button>
+      </div>
+    </div>
+
+    <!-- Result / Confirmation Banner -->
+    <div id="resultBanner" class="card" style="display: none; text-align: center;">
+      <h3 id="resultTitle" style="color: var(--success); margin-bottom: 8px;">Action Completed</h3>
+      <p id="resultMessage" style="font-size: 15px; color: var(--text);"></p>
+    </div>
+
+    <!-- Security Footer -->
+    <div class="security-note">
+      Cryptographic Binding: <code id="payloadHashDisplay">SHA-256 Verified</code><br>
+      Zero unapproved writes: No data reaches Tally without explicit authenticated signature.
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const draftId = window.location.pathname.split("/").pop() || urlParams.get("id") || "demo-draft";
+
+    function formatINR(val) {
+      if (!val) return "₹0.00";
+      const num = parseFloat(val);
+      return "₹" + num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    async function loadDraft() {
+      document.getElementById("draftIdDisplay").innerText = draftId;
+      try {
+        const res = await fetch(`/api/approve/${draftId}`, {
+          headers: { "Accept": "application/json" }
+        });
+        if (!res.ok) {
+          throw new Error("Unable to fetch draft: HTTP " + res.status);
+        }
+        const data = await res.json();
+        renderDraft(data);
+      } catch (err) {
+        console.warn("Using local display or fallback:", err.message);
+      }
+    }
+
+    function renderDraft(data) {
+      const payload = data.payload || {};
+      document.getElementById("voucherType").innerText = payload.voucher_type || "Voucher";
+      document.getElementById("voucherDate").innerText = payload.date || "—";
+      document.getElementById("partyName").innerText = payload.party || "—";
+      document.getElementById("totalAmount").innerText = formatINR(payload.amount);
+      document.getElementById("voucherNarration").innerText = payload.narration || "No narration provided.";
+      document.getElementById("payloadHashDisplay").innerText = (data.payload_hash || "").substring(0, 16) + "...";
+
+      // Render lines
+      const tbody = document.getElementById("linesTableBody");
+      tbody.innerHTML = "";
+      const lines = payload.lines || [];
+      lines.forEach(line => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${line.ledger}</strong></td>
+          <td class="num">${line.is_debit ? formatINR(line.amount) : "—"}</td>
+          <td class="num">${!line.is_debit ? formatINR(line.amount) : "—"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Flags and risk
+      if (data.flags && data.flags.length > 0) {
+        document.getElementById("riskCard").style.display = "block";
+        document.getElementById("riskHeading").innerText = `Risk Level: ${data.risk_level || "MEDIUM"}`;
+        const flagsContainer = document.getElementById("flagsContainer");
+        flagsContainer.innerHTML = "";
+        data.flags.forEach(f => {
+          const pill = document.createElement("span");
+          pill.className = "pill";
+          pill.innerText = f.replace(/_/g, " ");
+          flagsContainer.appendChild(pill);
+        });
+      }
+    }
+
+    async function submitDecision(decision) {
+      const note = document.getElementById("approverNote").value;
+      const btnApprove = document.getElementById("btnApprove");
+      const btnReject = document.getElementById("btnReject");
+      btnApprove.disabled = true;
+      btnReject.disabled = true;
+
+      try {
+        const res = await fetch(`/api/approve/${draftId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ decision, note, channel: "web" })
+        });
+        const result = await res.json();
+        
+        document.getElementById("actionCard").style.display = "none";
+        document.getElementById("resultBanner").style.display = "block";
+        if (decision === "approve") {
+          document.getElementById("resultTitle").innerText = "✔ Voucher Approved & Posted";
+          document.getElementById("resultMessage").innerHTML = `Tally Voucher Number: <strong>${result.tally_voucher_no || 'Confirmed'}</strong>`;
+          document.getElementById("statusBadge").className = "status-badge badge-approved";
+          document.getElementById("statusBadge").innerText = "Posted";
+        } else {
+          document.getElementById("resultTitle").innerText = "✖ Draft Rejected";
+          document.getElementById("resultTitle").style.color = "var(--danger)";
+          document.getElementById("resultMessage").innerText = "Draft marked rejected. No records were posted to Tally.";
+          document.getElementById("statusBadge").className = "status-badge badge-rejected";
+          document.getElementById("statusBadge").innerText = "Rejected";
+        }
+      } catch (err) {
+        alert("Failed to submit decision: " + err.message);
+        btnApprove.disabled = false;
+        btnReject.disabled = false;
+      }
+    }
+
+    // Auto-load draft if draftId is present
+    if (draftId && draftId !== "demo-draft") {
+      loadDraft();
+    }
+  </script>
+</body>
+</html>
