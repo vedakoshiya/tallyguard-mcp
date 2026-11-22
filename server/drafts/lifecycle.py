@@ -10,18 +10,17 @@ Enforces:
 3. User scoping on draft cancellations (users can only cancel their own drafts).
 """
 
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional
 import uuid
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from server.auth.scopes import ScopeDeniedError
-from server.drafts.hashing import compute_payload_hash, verify_payload_hash
+from server.drafts.hashing import compute_payload_hash
 
 
 class DraftStateError(Exception):
     """Raised when an invalid state transition is attempted on a draft."""
-    pass
 
 
 @dataclass
@@ -33,20 +32,20 @@ class Draft:
     created_by: str
     client_id: str
     voucher_type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     payload_hash: str
-    flags: List[str]
+    flags: list[str]
     risk_level: str
     requires_second_approver: bool
     status: str  # pending_approval, pending_second_approval, approved, rejected, expired, posted, failed, cancelled
     idempotency_key: str
     expires_at: str
     created_at: str
-    tally_voucher_no: Optional[str] = None
-    approver_ids: List[str] = field(default_factory=list)
-    rejection_reason: Optional[str] = None
+    tally_voucher_no: str | None = None
+    approver_ids: list[str] = field(default_factory=list)
+    rejection_reason: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -56,7 +55,7 @@ class DraftManager:
     def __init__(self, default_expiry_hours: int = 48, base_approval_url: str = "https://tallyguard.local/approve/"):
         self.default_expiry_hours = default_expiry_hours
         self.base_approval_url = base_approval_url.rstrip("/") + "/"
-        self._drafts: Dict[str, Draft] = {}
+        self._drafts: dict[str, Draft] = {}
 
     def create_draft(
         self,
@@ -64,15 +63,15 @@ class DraftManager:
         user_id: str,
         client_id: str,
         voucher_type: str,
-        payload: Dict[str, Any],
-        flags: List[str],
+        payload: dict[str, Any],
+        flags: list[str],
         risk_level: str,
         requires_second_approver: bool = False,
-        expiry_hours: Optional[int] = None,
+        expiry_hours: int | None = None,
     ) -> Draft:
         """Create a new draft in pending_approval state."""
         draft_id = f"d_{uuid.uuid4().hex[:12]}"
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         exp_hours = expiry_hours or self.default_expiry_hours
         expires_at = (now + timedelta(hours=exp_hours)).isoformat()
         created_at = now.isoformat()
@@ -100,14 +99,14 @@ class DraftManager:
         self._drafts[draft_id] = draft
         return draft
 
-    def get_draft(self, draft_id: str) -> Optional[Draft]:
+    def get_draft(self, draft_id: str) -> Draft | None:
         """Fetch draft by ID, updating expiration if passed."""
         draft = self._drafts.get(draft_id)
         if not draft:
             return None
 
         # Check expiration
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(UTC).isoformat()
         if draft.status in ("pending_approval", "pending_second_approval") and draft.expires_at < now_iso:
             draft.status = "expired"
 

@@ -5,10 +5,9 @@ Provides tenant and user rate limiting with token-bucket algorithm,
 burst handling, and daily draft submission quotas.
 """
 
-from datetime import datetime, timezone, date
 import threading
 import time
-from typing import Dict, Optional, Tuple
+from datetime import date
 
 
 class RateLimitedError(Exception):
@@ -30,7 +29,7 @@ class TokenBucket:
         self.last_updated = time.monotonic()
         self._lock = threading.Lock()
 
-    def consume(self, tokens_needed: float = 1.0) -> Tuple[bool, float]:
+    def consume(self, tokens_needed: float = 1.0) -> tuple[bool, float]:
         """Attempt to consume tokens.
 
         Returns:
@@ -67,8 +66,8 @@ class RateLimiter:
         self.default_refill = default_refill_per_sec
         self.max_daily_drafts = max_daily_drafts
 
-        self._buckets: Dict[str, TokenBucket] = {}
-        self._daily_draft_counts: Dict[str, Dict[str, int]] = {}  # {user_id: {YYYY-MM-DD: count}}
+        self._buckets: dict[str, TokenBucket] = {}
+        self._daily_draft_counts: dict[str, dict[str, int]] = {}  # {user_id: {YYYY-MM-DD: count}}
         self._lock = threading.Lock()
 
     def _get_bucket(self, key: str) -> TokenBucket:

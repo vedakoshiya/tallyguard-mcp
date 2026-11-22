@@ -6,17 +6,18 @@ Implements TASK-4.5 and Goal G6:
 - Verifies concurrency resilience under burst traffic.
 """
 
-from decimal import Decimal
 import time
-from typing import Any, Dict, List
+from decimal import Decimal
+from typing import Any
+
 import pytest
 
-from bridge.tally_adapter.decimal_math import ensure_decimal, quantize_currency
-from server.auth.rate_limiter import RateLimiter, RateLimitedError
+from bridge.tally_adapter.decimal_math import quantize_currency
+from server.auth.rate_limiter import RateLimitedError, RateLimiter
 
 
 @pytest.fixture(scope="module")
-def dataset_100k_vouchers() -> List[Dict[str, Any]]:
+def dataset_100k_vouchers() -> list[dict[str, Any]]:
     """Synthesize a dataset of 100,000 realistic vouchers."""
     vouchers = []
     parties = [
@@ -50,7 +51,7 @@ def test_p95_read_query_latency_on_100k_vouchers(dataset_100k_vouchers):
     target_from = "2026-06-01"
     target_to = "2026-08-31"
 
-    durations: List[float] = []
+    durations: list[float] = []
 
     # Run 20 iterations to compute p95 latency
     for _ in range(20):

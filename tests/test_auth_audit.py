@@ -5,34 +5,31 @@ Verifies:
 - TC-AUD-01 to TC-AUD-05: Hash-chained audit logging, tamper detection, and sensitive redaction.
 """
 
-from datetime import datetime, timezone, timedelta
 import pytest
 
+from server.audit.hash_chain import (
+    GENESIS_HASH,
+    AuditChainLogger,
+)
+from server.audit.redaction import redact_sensitive_data, redact_string
+from server.auth.allowlist import LedgerAllowListValidator
+from server.auth.rate_limiter import RateLimitedError, RateLimiter
+from server.auth.scopes import (
+    SCOPE_APPROVE_VOUCHERS,
+    SCOPE_READ_LEDGERS,
+    SCOPE_READ_REPORTS,
+    ScopeDeniedError,
+    check_tool_permission,
+)
 from server.auth.tokens import (
+    AuthSecurityError,
+    InvalidTokenError,
+    TokenExpiredError,
     create_access_token,
     decode_and_validate_token,
     generate_pkce_pair,
     verify_pkce,
-    AuthSecurityError,
-    TokenExpiredError,
-    InvalidTokenError,
 )
-from server.auth.scopes import (
-    check_tool_permission,
-    ScopeDeniedError,
-    SCOPE_READ_REPORTS,
-    SCOPE_READ_LEDGERS,
-    SCOPE_DRAFT_VOUCHERS,
-    SCOPE_APPROVE_VOUCHERS,
-)
-from server.auth.allowlist import LedgerAllowListValidator
-from server.auth.rate_limiter import RateLimiter, RateLimitedError, TokenBucket
-from server.audit.hash_chain import (
-    AuditChainLogger,
-    compute_args_hash,
-    GENESIS_HASH,
-)
-from server.audit.redaction import redact_sensitive_data, redact_string
 
 SECRET_KEY = "test-secret-key-32-characters-long-tallyguard"
 
@@ -192,7 +189,7 @@ def test_ledger_allowlist_validator():
     ]
     filtered = LedgerAllowListValidator.filter_ledgers(raw_ledgers, allowlist)
     assert len(filtered) == 2
-    assert [l["name"] for l in filtered] == ["Patel Textiles", "Sales Account"]
+    assert [item["name"] for item in filtered] == ["Patel Textiles", "Sales Account"]
 
 
 # ==============================================================================

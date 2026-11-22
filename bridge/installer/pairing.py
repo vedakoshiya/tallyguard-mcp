@@ -8,27 +8,24 @@ Implements TASK-5.2, US-09, FR-070, and Goal G5:
 5. Setup target: < 20 minutes with zero manual firewall port configuration.
 """
 
-from dataclasses import dataclass
 import hashlib
-import json
 import os
-from pathlib import Path
 import platform
 import re
 import uuid
-from typing import Any, Dict, Optional, Tuple
+from pathlib import Path
+from typing import Any
+
 import httpx
 
-from bridge.service import BridgeServiceConfig, BridgeService
+from bridge.service import BridgeServiceConfig
 from bridge.tally_adapter.client import TallyClient
-
 
 PAIRING_CODE_REGEX = re.compile(r"^TG-\d{4}-[A-Z0-9]{4}$", re.IGNORECASE)
 
 
 class PairingError(Exception):
     """Raised when pairing code validation or exchange fails."""
-    pass
 
 
 class DevicePairingManager:
@@ -37,8 +34,8 @@ class DevicePairingManager:
     def __init__(
         self,
         relay_url: str = "https://relay.tallyguard.local/api/pair",
-        config_dir: Optional[Path] = None,
-        transport: Optional[httpx.BaseTransport] = None,
+        config_dir: Path | None = None,
+        transport: httpx.BaseTransport | None = None,
     ):
         self.relay_url = relay_url
         if config_dir is None:
@@ -79,8 +76,8 @@ class DevicePairingManager:
         self,
         tenant_id: str,
         pairing_code: str,
-        device_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        device_id: str | None = None,
+    ) -> dict[str, Any]:
         """Submit one-time code to cloud relay to receive device credentials."""
         code = pairing_code.strip().upper()
         if not self.validate_pairing_code_format(code):

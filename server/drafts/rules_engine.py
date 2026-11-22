@@ -11,9 +11,9 @@ Evaluates proposed drafts against business rules before approval:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, date, timedelta
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from bridge.tally_adapter.decimal_math import ensure_decimal
 
@@ -22,12 +22,12 @@ from bridge.tally_adapter.decimal_math import ensure_decimal
 class AnomalyReport:
     """Evaluation output from rules engine."""
 
-    flags: List[str]
+    flags: list[str]
     risk_level: str  # "LOW", "MEDIUM", "HIGH"
     requires_second_approver: bool
-    details: List[str] = field(default_factory=list)
+    details: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "flags": self.flags,
             "risk_level": self.risk_level,
@@ -54,13 +54,13 @@ class AnomalyRulesEngine:
         party_name: str,
         total_amount: Decimal,
         voucher_date_str: str,
-        known_ledgers: Optional[Set[str]] = None,
-        existing_vouchers: Optional[List[Dict[str, Any]]] = None,
-        user_allowlist: Optional[List[str]] = None,
+        known_ledgers: set[str] | None = None,
+        existing_vouchers: list[dict[str, Any]] | None = None,
+        user_allowlist: list[str] | None = None,
     ) -> AnomalyReport:
         """Run all anomaly checks on a proposed voucher draft."""
-        flags: List[str] = []
-        details: List[str] = []
+        flags: list[str] = []
+        details: list[str] = []
         requires_second_approver = False
 
         amt = ensure_decimal(total_amount)
@@ -80,7 +80,7 @@ class AnomalyRulesEngine:
 
         # 2. New Party Reference Rule (Anti-Injection / Anti-Exfiltration)
         if known_ledgers is not None:
-            normalized_known = {l.strip().lower() for l in known_ledgers}
+            normalized_known = {name.strip().lower() for name in known_ledgers}
             if party_name.strip().lower() not in normalized_known:
                 flags.append("new_party_reference")
                 details.append(f"Party '{party_name}' is not in existing Chart of Accounts.")

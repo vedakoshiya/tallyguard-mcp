@@ -8,16 +8,16 @@ Ensures:
 4. Exact date delta calculation for aging buckets (0-30, 31-60, 61-90, 90+ days).
 """
 
-from datetime import datetime, date
-from decimal import Decimal
-from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
+from datetime import datetime
+from decimal import Decimal
+from typing import Any
 
-from bridge.tally_adapter.decimal_math import ensure_decimal, quantize_currency
+from bridge.tally_adapter.decimal_math import ensure_decimal
 from server.sanitize.untrusted_text import sanitize_untrusted_text
 
 
-def parse_company_info(xml_text: str) -> Dict[str, Any]:
+def parse_company_info(xml_text: str) -> dict[str, Any]:
     """Parse Company Details XML response."""
     root = ET.fromstring(xml_text)
     data = root.find(".//DATA")
@@ -41,11 +41,11 @@ def parse_company_info(xml_text: str) -> Dict[str, Any]:
     }
 
 
-def parse_ledgers(xml_text: str) -> List[Dict[str, Any]]:
+def parse_ledgers(xml_text: str) -> list[dict[str, Any]]:
     """Parse List of Accounts / Ledgers XML response."""
     root = ET.fromstring(xml_text)
     ledger_elements = root.findall(".//LEDGER")
-    ledgers: List[Dict[str, Any]] = []
+    ledgers: list[dict[str, Any]] = []
 
     for elem in ledger_elements:
         name_elem = elem.find("NAME")
@@ -68,7 +68,7 @@ def parse_ledgers(xml_text: str) -> List[Dict[str, Any]]:
     return ledgers
 
 
-def parse_party_ledger(xml_text: str) -> Dict[str, Any]:
+def parse_party_ledger(xml_text: str) -> dict[str, Any]:
     """Parse Ledger Vouchers (Party Statement) XML response."""
     root = ET.fromstring(xml_text)
     data = root.find(".//DATA")
@@ -79,7 +79,7 @@ def parse_party_ledger(xml_text: str) -> Dict[str, Any]:
     op_str = data.findtext("OPENINGBALANCE", "0.00")
     cl_str = data.findtext("CLOSINGBALANCE", "0.00")
 
-    entries: List[Dict[str, Any]] = []
+    entries: list[dict[str, Any]] = []
     for v in data.findall(".//VOUCHER"):
         v_no = v.findtext("VOUCHERNUMBER", "")
         v_date = v.findtext("DATE", "")
@@ -110,10 +110,10 @@ def parse_party_ledger(xml_text: str) -> Dict[str, Any]:
 def parse_receivables_ageing(
     xml_text: str,
     as_on_date: str,
-    buckets: Optional[List[int]] = None,
-    min_amount: Optional[Decimal] = None,
+    buckets: list[int] | None = None,
+    min_amount: Decimal | None = None,
     top_n: int = 20,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Parse Bills Receivable and calculate exact aging buckets (0-30, 31-60, 61-90, 90+ days).
 
     Age = (as_on_date - bill_date).days
@@ -125,11 +125,10 @@ def parse_receivables_ageing(
     root = ET.fromstring(xml_text)
     bills = root.findall(".//BILL")
 
-    party_totals: Dict[str, Dict[str, Any]] = {}
+    party_totals: dict[str, dict[str, Any]] = {}
 
     for b in bills:
         party = b.findtext("PARTYNAME", "Unknown Party")
-        bill_no = b.findtext("BILLNO", "")
         bill_date_str = b.findtext("BILLDATE", "")
         pending_str = b.findtext("PENDINGAMOUNT", "0.00")
         pending_amt = ensure_decimal(pending_str)
@@ -185,11 +184,11 @@ def parse_receivables_ageing(
     }
 
 
-def parse_stock_summary(xml_text: str) -> List[Dict[str, Any]]:
+def parse_stock_summary(xml_text: str) -> list[dict[str, Any]]:
     """Parse Stock Summary XML response."""
     root = ET.fromstring(xml_text)
     items = root.findall(".//STOCKITEM")
-    stock_list: List[Dict[str, Any]] = []
+    stock_list: list[dict[str, Any]] = []
 
     for item in items:
         name = item.findtext("NAME", "")

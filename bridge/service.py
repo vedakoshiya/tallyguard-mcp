@@ -8,20 +8,20 @@ Implements TASK-5.1, FR-070, FR-071, and Goal G5:
 5. Provides graceful stop, pause, resume, and Windows Service integration.
 """
 
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
 import json
 import logging
-import os
-from pathlib import Path
 import signal
 import sys
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
 import httpx
 
-from bridge.tally_adapter.client import TallyClient, TallyConnectionError
+from bridge.tally_adapter.client import TallyClient
 
 logger = logging.getLogger("TallyGuardBridgeService")
 
@@ -40,18 +40,18 @@ class BridgeServiceConfig:
     initial_backoff_sec: float = 1.0
     max_backoff_sec: float = 60.0
     backoff_multiplier: float = 2.0
-    device_token: Optional[str] = None
-    config_file_path: Optional[str] = None
+    device_token: str | None = None
+    config_file_path: str | None = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "BridgeServiceConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "BridgeServiceConfig":
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
     @classmethod
     def load_from_file(cls, path: Path) -> "BridgeServiceConfig":
         if not path.exists():
             raise FileNotFoundError(f"Configuration file not found: {path}")
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         return cls.from_dict(data)
 
@@ -69,11 +69,11 @@ class HealthStatus:
     tally_connected: bool
     relay_connected: bool
     last_heartbeat: str
-    active_company: Optional[str]
+    active_company: str | None
     reconnect_attempts: int
     queue_depth: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -83,8 +83,8 @@ class BridgeService:
     def __init__(
         self,
         config: BridgeServiceConfig,
-        tally_transport: Optional[httpx.BaseTransport] = None,
-        relay_transport: Optional[httpx.BaseTransport] = None,
+        tally_transport: httpx.BaseTransport | None = None,
+        relay_transport: httpx.BaseTransport | None = None,
     ):
         self.config = config
         self.tally_transport = tally_transport
@@ -97,17 +97,17 @@ class BridgeService:
 
         self._running = False
         self._paused = False
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
         # State tracking
         self._relay_connected = False
         self._tally_connected = False
         self._reconnect_attempts = 0
-        self._last_heartbeat_time = datetime.min.replace(tzinfo=timezone.utc)
+        self._last_heartbeat_time = datetime.min.replace(tzinfo=UTC)
         self._current_backoff = config.initial_backoff_sec
 
-    def discover_tally_endpoint(self, candidate_ports: Optional[List[int]] = None) -> str:
+    def discover_tally_endpoint(self, candidate_ports: list[int] | None = None) -> str:
         """Probe common local Tally ports (9000, 9001, 9002) to auto-discover active endpoint."""
         candidate_ports = candidate_ports or [9000, 9001, 9002]
 
@@ -160,10 +160,10 @@ class BridgeService:
                 reconnect_attempts=self._reconnect_attempts,
             )
 
-    def emit_heartbeat(self) -> Dict[str, Any]:
+    def emit_heartbeat(self) -> dict[str, Any]:
         """Construct structured heartbeat packet for cloud relay."""
         health = self.check_health()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         self._last_heartbeat_time = now
 
         return {

@@ -9,18 +9,10 @@ Enforces:
 """
 
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import httpx
 
-from bridge.templates.allowlist import (
-    render_template,
-    TEMPLATE_COMPANY_INFO,
-    TEMPLATE_LIST_LEDGERS,
-    TEMPLATE_PARTY_LEDGER,
-    TEMPLATE_RECEIVABLES_AGEING,
-    TEMPLATE_SEARCH_VOUCHERS,
-    TEMPLATE_STOCK_SUMMARY,
-)
 from bridge.tally_adapter.xml_parser import (
     parse_company_info,
     parse_ledgers,
@@ -28,11 +20,18 @@ from bridge.tally_adapter.xml_parser import (
     parse_receivables_ageing,
     parse_stock_summary,
 )
+from bridge.templates.allowlist import (
+    TEMPLATE_COMPANY_INFO,
+    TEMPLATE_LIST_LEDGERS,
+    TEMPLATE_PARTY_LEDGER,
+    TEMPLATE_RECEIVABLES_AGEING,
+    TEMPLATE_STOCK_SUMMARY,
+    render_template,
+)
 
 
 class TallyConnectionError(Exception):
     """Raised when Tally instance is offline, unreachable, or returns an error."""
-    pass
 
 
 class TallyAdapterClient:
@@ -44,9 +43,9 @@ class TallyAdapterClient:
         port: int = 9000,
         company_name: str = "Surat Textile Traders Pvt Ltd",
         timeout_seconds: float = 10.0,
-        transport: Optional[httpx.BaseTransport] = None,
-        endpoint: Optional[str] = None,
-        timeout: Optional[float] = None,
+        transport: httpx.BaseTransport | None = None,
+        endpoint: str | None = None,
+        timeout: float | None = None,
     ):
         if endpoint:
             self.endpoint = endpoint
@@ -67,7 +66,7 @@ class TallyAdapterClient:
         self.timeout = timeout if timeout is not None else timeout_seconds
         self.transport = transport
 
-    def _execute_template(self, template_id: str, params: Dict[str, Any]) -> str:
+    def _execute_template(self, template_id: str, params: dict[str, Any]) -> str:
         """Render allow-listed template and POST to Tally instance."""
         params["company_name"] = self.company_name
         xml_payload = render_template(template_id, params)
@@ -90,19 +89,19 @@ class TallyAdapterClient:
                 f"Ensure Tally is running and port {self.port} is accessible."
             ) from e
 
-    def get_company_info(self) -> Dict[str, Any]:
+    def get_company_info(self) -> dict[str, Any]:
         """Fetch company identity, financial year, and base currency."""
         xml_resp = self._execute_template(TEMPLATE_COMPANY_INFO, {})
         return parse_company_info(xml_resp)
 
-    def list_ledgers(self, group_filter: str = "") -> List[Dict[str, Any]]:
+    def list_ledgers(self, group_filter: str = "") -> list[dict[str, Any]]:
         """List ledgers from Chart of Accounts, optionally filtered by group."""
         xml_resp = self._execute_template(TEMPLATE_LIST_LEDGERS, {"group_filter": group_filter})
         return parse_ledgers(xml_resp)
 
     def get_party_ledger(
         self, party_name: str, from_date: str, to_date: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch party account statement with debit, credit, and running balance."""
         xml_resp = self._execute_template(
             TEMPLATE_PARTY_LEDGER,
@@ -113,17 +112,17 @@ class TallyAdapterClient:
     def get_receivables_ageing(
         self,
         as_on_date: str,
-        buckets: Optional[List[int]] = None,
-        min_amount: Optional[Decimal] = None,
+        buckets: list[int] | None = None,
+        min_amount: Decimal | None = None,
         top_n: int = 20,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch outstanding bills and compute aging buckets."""
         xml_resp = self._execute_template(
             TEMPLATE_RECEIVABLES_AGEING, {"as_on_date": as_on_date}
         )
         return parse_receivables_ageing(xml_resp, as_on_date, buckets, min_amount, top_n)
 
-    def get_stock_summary(self, as_on_date: str) -> List[Dict[str, Any]]:
+    def get_stock_summary(self, as_on_date: str) -> list[dict[str, Any]]:
         """Fetch stock inventory summary."""
         xml_resp = self._execute_template(TEMPLATE_STOCK_SUMMARY, {"as_on_date": as_on_date})
         return parse_stock_summary(xml_resp)

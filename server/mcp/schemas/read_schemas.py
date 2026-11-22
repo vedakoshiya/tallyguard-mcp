@@ -4,7 +4,7 @@ Enforces strict type validation, parameter pattern checks, and rejects unknown f
 (extra="forbid") per FR-041 and FR-082.
 """
 
-from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -16,21 +16,20 @@ class StrictBaseModel(BaseModel):
 
 class GetCompanyInfoInput(StrictBaseModel):
     """Input for get_company_info tool. Side-effect free."""
-    pass
 
 
 class ListLedgersInput(StrictBaseModel):
     """Input for list_ledgers tool."""
 
-    group: Optional[str] = Field(
+    group: str | None = Field(
         default=None,
         description="Filter by parent group name (e.g. 'Sundry Debtors', 'Bank Accounts').",
     )
-    name_prefix: Optional[str] = Field(
+    name_prefix: str | None = Field(
         default=None,
         description="Filter ledgers starting with a given prefix.",
     )
-    cursor: Optional[str] = Field(
+    cursor: str | None = Field(
         default=None,
         description="Opaque cursor for pagination.",
     )
@@ -71,11 +70,11 @@ class GetReceivablesAgeingInput(StrictBaseModel):
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Date on which ageing is calculated (YYYY-MM-DD).",
     )
-    buckets: List[int] = Field(
+    buckets: list[int] = Field(
         default=[30, 60, 90],
         description="Age bucket thresholds in days (e.g. [30, 60, 90] yields 0-30, 31-60, 61-90, 90+).",
     )
-    min_amount: Optional[str] = Field(
+    min_amount: str | None = Field(
         default=None,
         pattern=r"^[0-9]+(\.[0-9]{1,2})?$",
         description="Optional minimum bill amount filter (e.g. '1000.00').",
@@ -96,11 +95,11 @@ class GetPayablesAgeingInput(StrictBaseModel):
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Date on which ageing is calculated (YYYY-MM-DD).",
     )
-    buckets: List[int] = Field(
+    buckets: list[int] = Field(
         default=[30, 60, 90],
         description="Age bucket thresholds in days.",
     )
-    min_amount: Optional[str] = Field(
+    min_amount: str | None = Field(
         default=None,
         pattern=r"^[0-9]+(\.[0-9]{1,2})?$",
         description="Optional minimum bill amount filter.",
@@ -116,39 +115,39 @@ class GetPayablesAgeingInput(StrictBaseModel):
 class SearchVouchersInput(StrictBaseModel):
     """Input for search_vouchers tool."""
 
-    voucher_type: Optional[str] = Field(
+    voucher_type: str | None = Field(
         default=None,
         description="Voucher type filter (Sales, Receipt, Payment, Purchase, Journal).",
     )
-    party: Optional[str] = Field(
+    party: str | None = Field(
         default=None,
         description="Filter by party name.",
     )
-    min_amount: Optional[str] = Field(
+    min_amount: str | None = Field(
         default=None,
         pattern=r"^[0-9]+(\.[0-9]{1,2})?$",
         description="Minimum voucher amount.",
     )
-    max_amount: Optional[str] = Field(
+    max_amount: str | None = Field(
         default=None,
         pattern=r"^[0-9]+(\.[0-9]{1,2})?$",
         description="Maximum voucher amount.",
     )
-    from_date: Optional[str] = Field(
+    from_date: str | None = Field(
         default=None,
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Voucher date from (YYYY-MM-DD).",
     )
-    to_date: Optional[str] = Field(
+    to_date: str | None = Field(
         default=None,
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Voucher date to (YYYY-MM-DD).",
     )
-    narration_query: Optional[str] = Field(
+    narration_query: str | None = Field(
         default=None,
         description="Substring search within voucher narration.",
     )
-    cursor: Optional[str] = Field(
+    cursor: str | None = Field(
         default=None,
         description="Opaque pagination cursor.",
     )
@@ -168,7 +167,7 @@ class GetStockSummaryInput(StrictBaseModel):
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Stock valuation date (YYYY-MM-DD).",
     )
-    item_or_group: Optional[str] = Field(
+    item_or_group: str | None = Field(
         default=None,
         description="Filter by stock item name or stock group.",
     )

@@ -6,7 +6,7 @@ from tool arguments before logging to the immutable audit trail.
 """
 
 import re
-from typing import Any, Dict, List, Union
+from typing import Any
 
 # Regex for Indian Permanent Account Number (PAN): 5 letters, 4 digits, 1 letter
 PAN_REGEX = re.compile(r"\b([A-Z]{5})(\d{4})([A-Z])\b", flags=re.IGNORECASE)
@@ -36,7 +36,7 @@ def redact_sensitive_data(data: Any) -> Any:
         return redact_string(data)
 
     if isinstance(data, dict):
-        redacted_dict: Dict[str, Any] = {}
+        redacted_dict: dict[str, Any] = {}
         for key, val in data.items():
             key_lower = str(key).lower()
             if any(cred in key_lower for cred in CREDENTIAL_KEYS):

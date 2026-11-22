@@ -9,9 +9,9 @@ is treated as untrusted data:
 4. Wraps in an immutable, delimited `untrusted_text` schema.
 """
 
-from dataclasses import dataclass, field
 import re
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 
 # Default maximum string lengths to prevent context flooding
 DEFAULT_MAX_NARRATION_LENGTH = 1000
@@ -49,9 +49,9 @@ class SanitizedText:
     truncated: bool
     sanitized: bool
     suspicious: bool
-    flags: List[str] = field(default_factory=list)
+    flags: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to standard MCP JSON-serializable dictionary."""
         return {
             "untrusted_text": {
@@ -66,7 +66,7 @@ class SanitizedText:
 
 
 def sanitize_untrusted_text(
-    raw_text: Optional[str],
+    raw_text: str | None,
     max_length: int = DEFAULT_MAX_NARRATION_LENGTH,
 ) -> SanitizedText:
     """Sanitize and delimit untrusted text sourced from Tally books.
@@ -90,7 +90,7 @@ def sanitize_untrusted_text(
 
     original_length = len(raw_text)
     sanitized = False
-    flags: List[str] = []
+    flags: list[str] = []
 
     # 1. Strip non-printable control characters
     cleaned_text = CONTROL_CHAR_REGEX.sub("", raw_text)

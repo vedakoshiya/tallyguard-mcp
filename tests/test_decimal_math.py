@@ -1,13 +1,15 @@
 """Unit tests for decimal currency math engine."""
 
 from decimal import Decimal
+
 import pytest
+
 from bridge.tally_adapter.decimal_math import (
     ensure_decimal,
+    format_inr,
+    from_paise,
     quantize_currency,
     to_paise,
-    from_paise,
-    format_inr,
 )
 
 

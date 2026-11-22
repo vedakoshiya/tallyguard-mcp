@@ -6,13 +6,13 @@ Each entry cryptographically binds to the previous entry's hash, making silent
 history tampering or row deletion mathematically detectable.
 """
 
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
 import hashlib
 import hmac
 import json
-from typing import Any, Dict, List, Optional, Tuple
 import uuid
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from typing import Any
 
 from server.audit.redaction import redact_sensitive_data
 
@@ -24,7 +24,7 @@ def canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
-def compute_args_hash(args: Optional[Dict[str, Any]]) -> str:
+def compute_args_hash(args: dict[str, Any] | None) -> str:
     """Compute SHA-256 digest of canonical arguments dictionary."""
     if not args:
         canonical_str = "{}"
@@ -58,19 +58,19 @@ class AuditEntry:
 
     id: int
     tenant_id: str
-    actor_user: Optional[str]
-    client_id: Optional[str]
+    actor_user: str | None
+    client_id: str | None
     tool: str
     args_hash: str
-    args_redacted: Optional[Dict[str, Any]]
-    result_summary: Optional[Dict[str, Any]]
+    args_redacted: dict[str, Any] | None
+    result_summary: dict[str, Any] | None
     status: str
     correlation_id: str
     prev_hash: str
     entry_hash: str
     created_at: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -79,7 +79,7 @@ class AuditChainLogger:
 
     def __init__(self, secret_key: str):
         self.secret_key = secret_key
-        self.entries: List[AuditEntry] = []
+        self.entries: list[AuditEntry] = []
         self._last_hash = GENESIS_HASH
 
     @property
@@ -90,17 +90,17 @@ class AuditChainLogger:
         self,
         tenant_id: str,
         tool: str,
-        raw_args: Optional[Dict[str, Any]],
+        raw_args: dict[str, Any] | None,
         status: str,
-        actor_user: Optional[str] = None,
-        client_id: Optional[str] = None,
-        result_summary: Optional[Dict[str, Any]] = None,
-        correlation_id: Optional[str] = None,
-        timestamp_iso: Optional[str] = None,
+        actor_user: str | None = None,
+        client_id: str | None = None,
+        result_summary: dict[str, Any] | None = None,
+        correlation_id: str | None = None,
+        timestamp_iso: str | None = None,
     ) -> AuditEntry:
         """Create and append an audit record cryptographically bound to the prior hash."""
         corr_id = correlation_id or str(uuid.uuid4())
-        created_at = timestamp_iso or datetime.now(timezone.utc).isoformat()
+        created_at = timestamp_iso or datetime.now(UTC).isoformat()
         args_hash = compute_args_hash(raw_args)
         args_redacted = redact_sensitive_data(raw_args) if raw_args else {}
 
@@ -138,7 +138,7 @@ class AuditChainLogger:
         self._last_hash = entry_hash
         return entry
 
-    def verify_integrity(self) -> Tuple[bool, Optional[str]]:
+    def verify_integrity(self) -> tuple[bool, str | None]:
         """Verify the cryptographic hash chain across all stored entries.
 
         Returns:

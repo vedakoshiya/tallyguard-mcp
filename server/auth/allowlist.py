@@ -5,7 +5,8 @@ Restricts specific users or AI sessions to an approved subset of accounts/groups
 (e.g., restricting a sales bot to 'Sundry Debtors' and 'Sales Accounts').
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from server.auth.scopes import ScopeDeniedError
 
 
@@ -15,8 +16,8 @@ class LedgerAllowListValidator:
     @staticmethod
     def is_ledger_permitted(
         ledger_name: str,
-        parent_group: Optional[str],
-        allowlist: Optional[List[str]],
+        parent_group: str | None,
+        allowlist: list[str] | None,
     ) -> bool:
         """Check if a specific ledger is within the permitted allowlist.
 
@@ -48,8 +49,8 @@ class LedgerAllowListValidator:
     def assert_ledger_permitted(
         cls,
         ledger_name: str,
-        parent_group: Optional[str],
-        allowlist: Optional[List[str]],
+        parent_group: str | None,
+        allowlist: list[str] | None,
     ) -> None:
         """Assert that a ledger is permitted, raising ScopeDeniedError on failure."""
         if not cls.is_ledger_permitted(ledger_name, parent_group, allowlist):
@@ -63,18 +64,19 @@ class LedgerAllowListValidator:
     @classmethod
     def filter_ledgers(
         cls,
-        ledgers: List[Dict[str, Any]],
-        allowlist: Optional[List[str]],
-    ) -> List[Dict[str, Any]]:
+        ledgers: list[dict[str, Any]],
+        allowlist: list[str] | None,
+    ) -> list[dict[str, Any]]:
         """Filter a list of ledger dictionaries against an allowlist."""
         if allowlist is None:
             return ledgers
 
         return [
-            l for l in ledgers
+            ledger
+            for ledger in ledgers
             if cls.is_ledger_permitted(
-                ledger_name=l.get("name", ""),
-                parent_group=l.get("parent", ""),
+                ledger_name=ledger.get("name", ""),
+                parent_group=ledger.get("parent", ""),
                 allowlist=allowlist,
             )
         ]

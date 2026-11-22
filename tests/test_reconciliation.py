@@ -6,15 +6,16 @@ Uses in-memory simulated Tally transport for rapid, deterministic execution.
 """
 
 from decimal import Decimal
-import pytest
-import httpx
 
+import httpx
+import pytest
+
+from bridge.tally_adapter.client import TallyAdapterClient, TallyConnectionError
 from tests.fixtures.company_data import (
-    COMPANY_METADATA,
     CHART_OF_ACCOUNTS,
+    COMPANY_METADATA,
 )
 from tests.simulated_tally.server import create_simulated_tally_transport
-from bridge.tally_adapter.client import TallyAdapterClient, TallyConnectionError
 
 
 @pytest.fixture
@@ -41,7 +42,7 @@ def test_reconcile_chart_of_accounts(client):
     ledgers = client.list_ledgers()
     assert len(ledgers) == len(CHART_OF_ACCOUNTS)
 
-    ledger_map = {l["name"]: l for l in ledgers}
+    ledger_map = {ledger["name"]: ledger for ledger in ledgers}
 
     # Verify Patel Textiles
     patel = ledger_map["Patel Textiles"]

@@ -9,19 +9,19 @@ Provides:
 5. Idempotent bridge posting with Tally voucher confirmation.
 """
 
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from bridge.tally_adapter.poster import VoucherPoster
-from server.auth.tokens import TokenClaims, AuthSecurityError, decode_and_validate_token
-from server.auth.scopes import check_tool_permission, ScopeDeniedError, SCOPE_APPROVE_VOUCHERS
 from server.audit.hash_chain import AuditChainLogger
-from server.drafts.lifecycle import DraftManager, Draft, DraftStateError
-from server.drafts.hashing import compute_payload_hash, verify_payload_hash
+from server.auth.scopes import SCOPE_APPROVE_VOUCHERS, ScopeDeniedError, check_tool_permission
+from server.auth.tokens import AuthSecurityError, TokenClaims, decode_and_validate_token
+from server.drafts.hashing import verify_payload_hash
+from server.drafts.lifecycle import DraftManager, DraftStateError
 from server.mcp.schemas.draft_schemas import ApprovalDecisionInput
 
 try:
-    from fastapi import APIRouter, Header, HTTPException, Depends, status
+    from fastapi import APIRouter, Depends, Header, HTTPException, status
 except ImportError:
     APIRouter = None  # type: ignore
 
@@ -39,7 +39,7 @@ class ApprovalService:
         self.voucher_poster = voucher_poster
         self.audit_logger = audit_logger
 
-    def render_draft(self, draft_id: str, approver_claims: TokenClaims) -> Dict[str, Any]:
+    def render_draft(self, draft_id: str, approver_claims: TokenClaims) -> dict[str, Any]:
         """Render a draft for human review at GET /approve/{draft_id}."""
         draft = self.draft_manager.get_draft(draft_id)
         if not draft:
@@ -82,8 +82,8 @@ class ApprovalService:
         approver_claims: TokenClaims,
         decision: str,
         channel: str = "web",
-        note: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        note: str | None = None,
+    ) -> dict[str, Any]:
         """Process human approval decision (POST /approve/{draft_id})."""
         # 1. Enforce Human-Only Privilege (Invariant INV-03)
         if approver_claims.client_type != "human_user":
@@ -120,7 +120,7 @@ class ApprovalService:
             raise DraftStateError(f"Cannot approve draft in '{draft.status}' state.")
 
         # 4. Check Expiration
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(UTC).isoformat()
         if draft.expires_at < now_iso:
             draft.status = "expired"
             raise DraftStateError("Draft has expired. Expired drafts cannot be approved.")
@@ -213,7 +213,7 @@ def create_approval_router(approval_service: ApprovalService, secret_key: str):
 
     router = APIRouter(prefix="/approve", tags=["Approvals"])
 
-    def get_current_user_claims(authorization: Optional[str] = Header(None)) -> TokenClaims:
+    def get_current_user_claims(authorization: str | None = Header(None)) -> TokenClaims:
         if not authorization or not authorization.startswith("Bearer "):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

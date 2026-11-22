@@ -5,18 +5,18 @@ Processes allow-listed Tally XML requests and returns authentic Tally XML respon
 backed by the Surat Textile Traders reference fixture.
 """
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import threading
-from typing import Optional
 import xml.etree.ElementTree as ET
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from xml.sax.saxutils import escape as xml_escape
+
 import httpx
 
 from tests.fixtures.company_data import (
-    COMPANY_METADATA,
     CHART_OF_ACCOUNTS,
-    SAMPLE_VOUCHERS,
+    COMPANY_METADATA,
     RECEIVABLES_BILLS,
+    SAMPLE_VOUCHERS,
     STOCK_ITEMS,
 )
 
@@ -110,18 +110,18 @@ def _build_company_info_response() -> str:
 
 def _build_ledgers_response(group_filter: str = "") -> str:
     items = []
-    for l in CHART_OF_ACCOUNTS:
-        if group_filter and l["parent"].lower() != group_filter.lower():
+    for entry in CHART_OF_ACCOUNTS:
+        if group_filter and entry["parent"].lower() != group_filter.lower():
             continue
-        dr_cr_op = "Dr" if l["is_debit"] else "Cr"
-        dr_cr_cl = "Dr" if l["is_debit"] else "Cr"
-        name_esc = xml_escape(str(l["name"]))
-        parent_esc = xml_escape(str(l["parent"]))
+        dr_cr_op = "Dr" if entry["is_debit"] else "Cr"
+        dr_cr_cl = "Dr" if entry["is_debit"] else "Cr"
+        name_esc = xml_escape(str(entry["name"]))
+        parent_esc = xml_escape(str(entry["parent"]))
         items.append(f"""      <LEDGER NAME="{name_esc}">
         <NAME>{name_esc}</NAME>
         <PARENT>{parent_esc}</PARENT>
-        <OPENINGBALANCE>{l['opening_balance']:.2f} {dr_cr_op}</OPENINGBALANCE>
-        <CLOSINGBALANCE>{l['closing_balance']:.2f} {dr_cr_cl}</CLOSINGBALANCE>
+        <OPENINGBALANCE>{entry['opening_balance']:.2f} {dr_cr_op}</OPENINGBALANCE>
+        <CLOSINGBALANCE>{entry['closing_balance']:.2f} {dr_cr_cl}</CLOSINGBALANCE>
       </LEDGER>""")
 
     ledgers_xml = "\n".join(items)
@@ -140,7 +140,7 @@ def _build_ledgers_response(group_filter: str = "") -> str:
 
 
 def _build_party_ledger_response(party_name: str) -> str:
-    ledger = next((l for l in CHART_OF_ACCOUNTS if l["name"].lower() == party_name.lower()), None)
+    ledger = next((entry for entry in CHART_OF_ACCOUNTS if entry["name"].lower() == party_name.lower()), None)
     if not ledger:
         return f"""<ENVELOPE><BODY><DATA><MESSAGE>Ledger '{xml_escape(party_name)}' not found</MESSAGE></DATA></BODY></ENVELOPE>"""
 
@@ -293,8 +293,8 @@ class SimulatedTallyServer:
     def __init__(self, host: str = "127.0.0.1", port: int = 9000):
         self.host = host
         self.port = port
-        self.httpd: Optional[HTTPServer] = None
-        self.thread: Optional[threading.Thread] = None
+        self.httpd: HTTPServer | None = None
+        self.thread: threading.Thread | None = None
 
     def start(self) -> None:
         self.httpd = HTTPServer((self.host, self.port), SimulatedTallyHandler)

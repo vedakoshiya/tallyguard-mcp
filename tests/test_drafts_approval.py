@@ -8,18 +8,19 @@ Verifies:
 """
 
 from decimal import Decimal
+
 import pytest
 
 from bridge.tally_adapter.poster import VoucherPoster
-from server.auth.tokens import create_access_token, decode_and_validate_token, AuthSecurityError
-from server.auth.scopes import ScopeDeniedError, SCOPE_DRAFT_VOUCHERS, SCOPE_APPROVE_VOUCHERS
-from server.auth.rate_limiter import RateLimiter
+from server.api.approval_api import ApprovalService
 from server.audit.hash_chain import AuditChainLogger
+from server.auth.rate_limiter import RateLimiter
+from server.auth.scopes import SCOPE_APPROVE_VOUCHERS, SCOPE_DRAFT_VOUCHERS, ScopeDeniedError
+from server.auth.tokens import AuthSecurityError, create_access_token, decode_and_validate_token
+from server.drafts.hashing import compute_payload_hash
 from server.drafts.lifecycle import DraftManager, DraftStateError
 from server.drafts.rules_engine import AnomalyRulesEngine
-from server.drafts.hashing import compute_payload_hash
 from server.mcp.tools.draft_tools import DraftToolsHandler
-from server.api.approval_api import ApprovalService
 from tests.simulated_tally.server import create_simulated_tally_transport
 
 SECRET_KEY = "test-secret-key-32-characters-long-tallyguard"
@@ -462,6 +463,7 @@ def test_expired_draft_cannot_be_approved(draft_env):
 def test_fastapi_approval_rest_api_structure(draft_env):
     """Verify TASK-3.5: GET /approve/{draft_id} and POST /approve/{draft_id} REST routes exist and enforce auth."""
     from fastapi import HTTPException
+
     from server.api.approval_api import create_approval_router
     from server.mcp.schemas.draft_schemas import ApprovalDecisionInput
 

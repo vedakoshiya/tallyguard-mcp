@@ -12,33 +12,32 @@ Asserts:
 """
 
 from decimal import Decimal
+
 import pytest
 
-from bridge.templates.allowlist import assert_template_allowed, SecurityViolationError
-from server.sanitize.untrusted_text import sanitize_untrusted_text
-from server.auth.tokens import create_access_token, decode_and_validate_token
-from server.auth.scopes import (
-    ScopeDeniedError,
-    SCOPE_DRAFT_VOUCHERS,
-    SCOPE_APPROVE_VOUCHERS,
-    SCOPE_READ_LEDGERS,
-)
-from server.auth.rate_limiter import RateLimiter
+from bridge.tally_adapter.poster import VoucherPoster
+from bridge.templates.allowlist import SecurityViolationError, assert_template_allowed
+from server.api.approval_api import ApprovalService
 from server.audit.hash_chain import AuditChainLogger
-from server.drafts.lifecycle import DraftManager, DraftStateError
+from server.auth.rate_limiter import RateLimiter
+from server.auth.scopes import (
+    SCOPE_APPROVE_VOUCHERS,
+    SCOPE_DRAFT_VOUCHERS,
+    SCOPE_READ_LEDGERS,
+    ScopeDeniedError,
+)
+from server.auth.tokens import create_access_token, decode_and_validate_token
+from server.drafts.lifecycle import DraftManager
 from server.drafts.rules_engine import AnomalyRulesEngine
 from server.mcp.tools.draft_tools import DraftToolsHandler
-from server.api.approval_api import ApprovalService
-from bridge.tally_adapter.poster import VoucherPoster
-from tests.simulated_tally.server import create_simulated_tally_transport
+from server.sanitize.untrusted_text import sanitize_untrusted_text
 from tests.redteam.fixtures_poisoned import (
+    POISONED_NARRATIONS_CONTROL_CHARS,
+    POISONED_NARRATIONS_DELIMITER_ESCAPE,
     POISONED_NARRATIONS_DIRECT,
     POISONED_NARRATIONS_ROLEPLAY,
-    POISONED_NARRATIONS_DELIMITER_ESCAPE,
-    POISONED_NARRATIONS_CONTROL_CHARS,
-    POISONED_NARRATIONS_EXFILTRATION,
-    POISONED_COMPANY_DATASET,
 )
+from tests.simulated_tally.server import create_simulated_tally_transport
 
 SECRET_KEY = "test-secret-key-32-characters-long-tallyguard"
 

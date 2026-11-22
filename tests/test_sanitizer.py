@@ -2,7 +2,6 @@
 
 from server.sanitize.untrusted_text import (
     sanitize_untrusted_text,
-    DEFAULT_MAX_NARRATION_LENGTH,
 )
 
 

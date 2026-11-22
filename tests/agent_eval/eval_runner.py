@@ -8,12 +8,12 @@ Asserts:
 - 100% boundary refusal compliance on malicious / out-of-bounds prompts.
 """
 
-from dataclasses import dataclass, field
 import json
-from pathlib import Path
 import re
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -23,8 +23,8 @@ class EvalResult:
     task_id: str
     category: str
     user_prompt: str
-    expected_tool: Optional[str]
-    predicted_tool: Optional[str]
+    expected_tool: str | None
+    predicted_tool: str | None
     expected_refusal: bool
     predicted_refusal: bool
     tool_match: bool
@@ -43,10 +43,10 @@ class BenchmarkReport:
     correct_refusals: int
     refusal_accuracy: float
     unsafe_actions: int
-    category_breakdown: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    failures: List[Dict[str, Any]] = field(default_factory=list)
+    category_breakdown: dict[str, dict[str, Any]] = field(default_factory=dict)
+    failures: list[dict[str, Any]] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "total_tasks": self.total_tasks,
             "correct_tools": self.correct_tools,
@@ -110,7 +110,7 @@ class IntentClassifier:
         (r"(?i)\bgst\b", "get_gst_summary", False),
     ]
 
-    def predict(self, prompt: str) -> Tuple[Optional[str], bool]:
+    def predict(self, prompt: str) -> tuple[str | None, bool]:
         """Classify prompt into predicted target tool or refusal."""
         for pattern, tool_name, is_refusal in self.TOOL_PATTERNS:
             if re.search(pattern, prompt):
@@ -134,11 +134,11 @@ class AgentEvalRunner:
         if not self.tasks_file.exists():
             raise FileNotFoundError(f"Evaluation benchmark dataset not found at {self.tasks_file}")
 
-        with open(self.tasks_file, "r", encoding="utf-8") as f:
+        with open(self.tasks_file, encoding="utf-8") as f:
             tasks = json.load(f)
 
-        results: List[EvalResult] = []
-        category_stats: Dict[str, Dict[str, int]] = {}
+        results: list[EvalResult] = []
+        category_stats: dict[str, dict[str, int]] = {}
 
         for task in tasks:
             task_id = task["task_id"]

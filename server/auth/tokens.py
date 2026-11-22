@@ -8,29 +8,26 @@ Enforces:
 """
 
 import base64
-from datetime import datetime, timezone, timedelta
 import hashlib
 import hmac
 import json
 import secrets
-from typing import Any, Dict, List, Optional
 import uuid
+from datetime import UTC, datetime, timedelta
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuthSecurityError(Exception):
     """Base exception for authentication and token security violations."""
-    pass
 
 
 class TokenExpiredError(AuthSecurityError):
     """Raised when an access token has expired."""
-    pass
 
 
 class InvalidTokenError(AuthSecurityError):
     """Raised when an access token is malformed, has an invalid signature, or fails validation."""
-    pass
 
 
 class TokenClaims(BaseModel):
@@ -46,8 +43,8 @@ class TokenClaims(BaseModel):
         pattern=r"^(ai_client|human_user)$",
         description="Type of client: 'ai_client' or 'human_user'",
     )
-    scopes: List[str] = Field(default_factory=list, description="Granted OAuth scopes")
-    ledger_allowlist: Optional[List[str]] = Field(
+    scopes: list[str] = Field(default_factory=list, description="Granted OAuth scopes")
+    ledger_allowlist: list[str] | None = Field(
         default=None,
         description="Optional list of permitted ledgers or groups",
     )
@@ -56,7 +53,7 @@ class TokenClaims(BaseModel):
     jti: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique JWT ID")
 
 
-def generate_pkce_pair(verifier_length: int = 64) -> Dict[str, str]:
+def generate_pkce_pair(verifier_length: int = 64) -> dict[str, str]:
     """Generate OAuth 2.1 PKCE code_verifier and S256 code_challenge."""
     if verifier_length < 43 or verifier_length > 128:
         raise ValueError("PKCE code_verifier length must be between 43 and 128 characters.")
@@ -96,9 +93,9 @@ def create_access_token(
     tenant_id: str,
     client_id: str,
     client_type: str,
-    scopes: List[str],
+    scopes: list[str],
     secret_key: str,
-    ledger_allowlist: Optional[List[str]] = None,
+    ledger_allowlist: list[str] | None = None,
     expires_in_minutes: int = 30,
 ) -> str:
     """Create a signed JWT access token.
@@ -111,7 +108,7 @@ def create_access_token(
             "to AI client tokens. Approvals are strictly reserved for human identities."
         )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     exp = now + timedelta(minutes=expires_in_minutes)
 
     claims = TokenClaims(
@@ -167,10 +164,10 @@ def decode_and_validate_token(token_str: str, secret_key: str) -> TokenClaims:
         payload_json = json.loads(_base64url_decode(payload_b64).decode("utf-8"))
         claims = TokenClaims.model_validate(payload_json)
     except Exception as e:
-        raise InvalidTokenError(f"Invalid JWT claims payload: {str(e)}") from e
+        raise InvalidTokenError(f"Invalid JWT claims payload: {e!s}") from e
 
     # 3. Check expiration
-    now_ts = int(datetime.now(timezone.utc).timestamp())
+    now_ts = int(datetime.now(UTC).timestamp())
     if claims.exp < now_ts:
         raise TokenExpiredError(
             f"Access token expired at timestamp {claims.exp} (current time: {now_ts})."

@@ -6,25 +6,25 @@ Tools return draft_id, Dr/Cr lines, anomaly flags, and out-of-band approval URLs
 """
 
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from bridge.tally_adapter.decimal_math import ensure_decimal, format_inr
-from server.auth.tokens import TokenClaims
-from server.auth.scopes import check_tool_permission
+from server.audit.hash_chain import AuditChainLogger
 from server.auth.allowlist import LedgerAllowListValidator
 from server.auth.rate_limiter import RateLimiter
-from server.audit.hash_chain import AuditChainLogger
-from server.drafts.lifecycle import DraftManager, Draft
+from server.auth.scopes import check_tool_permission
+from server.auth.tokens import TokenClaims
+from server.drafts.lifecycle import DraftManager
 from server.drafts.rules_engine import AnomalyRulesEngine
 from server.mcp.schemas.draft_schemas import (
-    DraftReceiptVoucherInput,
-    DraftSalesVoucherInput,
-    DraftPaymentVoucherInput,
-    DraftJournalVoucherInput,
-    GetDraftStatusInput,
     CancelDraftInput,
+    DraftJournalVoucherInput,
+    DraftPaymentVoucherInput,
+    DraftReceiptVoucherInput,
     DraftResponse,
+    DraftSalesVoucherInput,
     DraftSummaryLine,
+    GetDraftStatusInput,
 )
 
 
@@ -37,8 +37,8 @@ class DraftToolsHandler:
         rules_engine: AnomalyRulesEngine,
         audit_logger: AuditChainLogger,
         rate_limiter: RateLimiter,
-        known_ledgers: Optional[Set[str]] = None,
-        existing_vouchers: Optional[List[Dict[str, Any]]] = None,
+        known_ledgers: set[str] | None = None,
+        existing_vouchers: list[dict[str, Any]] | None = None,
     ):
         self.draft_manager = draft_manager
         self.rules_engine = rules_engine
@@ -48,8 +48,8 @@ class DraftToolsHandler:
         self.existing_vouchers = existing_vouchers or []
 
     def draft_receipt_voucher(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-020: Prepare a receipt voucher draft."""
         check_tool_permission(claims, "draft_receipt_voucher")
         self.rate_limiter.check_and_increment_daily_drafts(claims.sub)
@@ -129,8 +129,8 @@ class DraftToolsHandler:
         return response.model_dump()
 
     def draft_sales_voucher(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-021: Prepare a sales voucher draft."""
         check_tool_permission(claims, "draft_sales_voucher")
         self.rate_limiter.check_and_increment_daily_drafts(claims.sub)
@@ -216,8 +216,8 @@ class DraftToolsHandler:
         return response.model_dump()
 
     def draft_payment_voucher(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-022: Prepare a payment voucher draft."""
         check_tool_permission(claims, "draft_payment_voucher")
         self.rate_limiter.check_and_increment_daily_drafts(claims.sub)
@@ -296,8 +296,8 @@ class DraftToolsHandler:
         return response.model_dump()
 
     def draft_journal_voucher(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-022: Prepare a journal voucher draft with strict Dr == Cr balancing."""
         check_tool_permission(claims, "draft_journal_voucher")
         self.rate_limiter.check_and_increment_daily_drafts(claims.sub)
@@ -389,8 +389,8 @@ class DraftToolsHandler:
         return response.model_dump()
 
     def get_draft_status(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-023: Query draft status."""
         check_tool_permission(claims, "get_draft_status")
         params = GetDraftStatusInput.model_validate(arguments)
@@ -402,8 +402,8 @@ class DraftToolsHandler:
         return draft.to_dict()
 
     def cancel_draft(
-        self, claims: TokenClaims, arguments: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, claims: TokenClaims, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """FR-023: Cancel an own draft."""
         check_tool_permission(claims, "cancel_draft")
         params = CancelDraftInput.model_validate(arguments)

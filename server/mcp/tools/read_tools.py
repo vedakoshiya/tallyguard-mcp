@@ -5,18 +5,17 @@ exact decimal serialization, and readOnlyHint annotations.
 """
 
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
-from pydantic import ValidationError
+from typing import Any
 
-from bridge.tally_adapter.client import TallyAdapterClient, TallyConnectionError
+from bridge.tally_adapter.client import TallyAdapterClient
 from bridge.tally_adapter.decimal_math import ensure_decimal
 from server.mcp.schemas.read_schemas import (
     GetCompanyInfoInput,
-    ListLedgersInput,
     GetPartyLedgerInput,
-    GetReceivablesAgeingInput,
     GetPayablesAgeingInput,
+    GetReceivablesAgeingInput,
     GetStockSummaryInput,
+    ListLedgersInput,
 )
 
 
@@ -37,13 +36,13 @@ class ReadToolsHandler:
     def __init__(self, client: TallyAdapterClient):
         self.client = client
 
-    def get_company_info(self, arguments: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def get_company_info(self, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
         """FR-001: get_company_info tool execution."""
         GetCompanyInfoInput.model_validate(arguments or {})
         raw_info = self.client.get_company_info()
         return _serialize_decimals(raw_info)
 
-    def list_ledgers(self, arguments: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def list_ledgers(self, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
         """FR-002: list_ledgers tool execution."""
         params = ListLedgersInput.model_validate(arguments or {})
         ledgers = self.client.list_ledgers(group_filter=params.group or "")
@@ -51,12 +50,12 @@ class ReadToolsHandler:
         # Apply group filter as defense-in-depth
         if params.group:
             g_filter = params.group.lower()
-            ledgers = [l for l in ledgers if l["parent"].lower() == g_filter]
+            ledgers = [ledger for ledger in ledgers if ledger["parent"].lower() == g_filter]
 
         # Apply name_prefix filter if supplied
         if params.name_prefix:
             prefix = params.name_prefix.lower()
-            ledgers = [l for l in ledgers if l["name"].lower().startswith(prefix)]
+            ledgers = [ledger for ledger in ledgers if ledger["name"].lower().startswith(prefix)]
 
         # Apply pagination limit
         total_count = len(ledgers)
@@ -68,7 +67,7 @@ class ReadToolsHandler:
             "ledgers": sliced_ledgers,
         })
 
-    def get_party_ledger(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def get_party_ledger(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """FR-003: get_party_ledger tool execution."""
         params = GetPartyLedgerInput.model_validate(arguments)
         statement = self.client.get_party_ledger(
@@ -78,7 +77,7 @@ class ReadToolsHandler:
         )
         return _serialize_decimals(statement)
 
-    def get_receivables_ageing(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def get_receivables_ageing(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """FR-004: get_receivables_ageing tool execution."""
         params = GetReceivablesAgeingInput.model_validate(arguments)
         min_amt = ensure_decimal(params.min_amount) if params.min_amount else None
@@ -90,7 +89,7 @@ class ReadToolsHandler:
         )
         return _serialize_decimals(ageing)
 
-    def get_payables_ageing(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def get_payables_ageing(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """FR-005: get_payables_ageing tool execution."""
         params = GetPayablesAgeingInput.model_validate(arguments)
         # Using receivables logic with payables template
@@ -103,7 +102,7 @@ class ReadToolsHandler:
         )
         return _serialize_decimals(ageing)
 
-    def get_stock_summary(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def get_stock_summary(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """FR-007: get_stock_summary tool execution."""
         params = GetStockSummaryInput.model_validate(arguments)
         stock_items = self.client.get_stock_summary(as_on_date=params.as_on)

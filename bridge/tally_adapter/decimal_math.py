@@ -5,15 +5,14 @@ Strictly enforces decimal precision (to the exact paisa, 2 decimal places) using
 inaccuracies.
 """
 
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import re
-from typing import Any, Union
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 # Two decimal places for currency quantization (exact paisa)
 CURRENCY_QUANTIZATION = Decimal("0.01")
 
 
-def ensure_decimal(value: Union[str, int, Decimal]) -> Decimal:
+def ensure_decimal(value: str | int | Decimal) -> Decimal:
     """Ensure value is converted to a strict Decimal.
 
     Raises:
@@ -38,10 +37,8 @@ def ensure_decimal(value: Union[str, int, Decimal]) -> Decimal:
         cleaned = re.sub(r"^[₹$Rs\.\s]+", "", cleaned, flags=re.IGNORECASE)
 
         # Detect Dr / Cr suffixes commonly used in Tally XML
-        is_dr = False
         is_cr = False
         if cleaned.upper().endswith(" DR"):
-            is_dr = True
             cleaned = cleaned[:-3].strip()
         elif cleaned.upper().endswith(" CR"):
             is_cr = True
@@ -67,7 +64,7 @@ def quantize_currency(val: Decimal) -> Decimal:
     return val.quantize(CURRENCY_QUANTIZATION, rounding=ROUND_HALF_UP)
 
 
-def to_paise(val: Union[str, int, Decimal]) -> int:
+def to_paise(val: str | int | Decimal) -> int:
     """Convert a monetary currency value into integer paise (e.g. 150.75 -> 15075)."""
     d = ensure_decimal(val)
     return int(d * 100)
@@ -80,7 +77,7 @@ def from_paise(paise: int) -> Decimal:
     return quantize_currency(Decimal(paise) / Decimal(100))
 
 
-def format_inr(val: Union[str, int, Decimal], include_symbol: bool = True) -> str:
+def format_inr(val: str | int | Decimal, include_symbol: bool = True) -> str:
     """Format a Decimal amount using the Indian numbering system (e.g. 1,23,456.78).
 
     Indian grouping: last 3 digits grouped, then groups of 2 digits.

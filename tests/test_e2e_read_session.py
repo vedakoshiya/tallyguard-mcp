@@ -9,7 +9,6 @@ Simulates an entire AI assistant read session against TallyGuard MCP:
 6. Schema rejection on malformed inputs and extra fields.
 """
 
-from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 

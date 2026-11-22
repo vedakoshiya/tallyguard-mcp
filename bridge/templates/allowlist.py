@@ -5,8 +5,8 @@ The bridge agent strictly accepts vetted `template_id` and parameter dictionarie
 it NEVER executes arbitrary XML received from external networks.
 """
 
-from typing import Any, Dict
 import html
+from typing import Any
 
 # Template IDs
 TEMPLATE_COMPANY_INFO = "get_company_info"
@@ -34,7 +34,6 @@ ALLOWED_TEMPLATE_IDS = {
 
 class SecurityViolationError(Exception):
     """Raised when an unauthorized template ID or arbitrary XML execution is attempted."""
-    pass
 
 
 def assert_template_allowed(template_id: str) -> None:
@@ -212,7 +211,7 @@ def build_stock_summary_xml(company_name: str, as_on_date: str) -> str:
 </ENVELOPE>"""
 
 
-def render_template(template_id: str, params: Dict[str, Any]) -> str:
+def render_template(template_id: str, params: dict[str, Any]) -> str:
     """Validate template_id against allow-list and render XML safely.
 
     Raises:

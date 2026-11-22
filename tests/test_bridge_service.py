@@ -9,12 +9,13 @@ Verifies:
 6. Local Tally port auto-discovery.
 """
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
 import pytest
 
-from bridge.service import BridgeServiceConfig, BridgeService, HealthStatus
 from bridge.installer.pairing import DevicePairingManager, PairingError
+from bridge.service import BridgeService, BridgeServiceConfig
 from tests.simulated_tally.server import create_simulated_tally_transport
 
 

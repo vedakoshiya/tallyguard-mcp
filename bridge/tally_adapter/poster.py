@@ -5,10 +5,10 @@ Converts approved draft transaction payloads into Tally import XML,
 submits them with a unique idempotency_key, and verifies the created voucher number.
 """
 
-from decimal import Decimal
-from typing import Any, Dict, Optional
 import xml.etree.ElementTree as ET
+from typing import Any
 from xml.sax.saxutils import escape as xml_escape
+
 import httpx
 
 from bridge.tally_adapter.client import TallyConnectionError
@@ -16,7 +16,6 @@ from bridge.tally_adapter.client import TallyConnectionError
 
 class PostingError(Exception):
     """Raised when Tally rejects voucher import or returns errors."""
-    pass
 
 
 class VoucherPoster:
@@ -26,7 +25,7 @@ class VoucherPoster:
         self,
         endpoint: str = "http://127.0.0.1:9000",
         company_name: str = "Surat Textile Traders Pvt Ltd",
-        transport: Optional[httpx.BaseTransport] = None,
+        transport: httpx.BaseTransport | None = None,
         timeout: float = 10.0,
     ):
         self.endpoint = endpoint
@@ -34,7 +33,7 @@ class VoucherPoster:
         self.transport = transport
         self.timeout = timeout
 
-    def build_import_xml(self, payload: Dict[str, Any], idempotency_key: str) -> str:
+    def build_import_xml(self, payload: dict[str, Any], idempotency_key: str) -> str:
         """Construct valid Tally Import Data XML for creating a voucher."""
         comp = xml_escape(self.company_name)
         v_type = xml_escape(str(payload.get("voucher_type", "Receipt")))
@@ -87,8 +86,8 @@ class VoucherPoster:
 </ENVELOPE>"""
 
     def post_approved_voucher(
-        self, payload: Dict[str, Any], idempotency_key: str
-    ) -> Dict[str, Any]:
+        self, payload: dict[str, Any], idempotency_key: str
+    ) -> dict[str, Any]:
         """Submit approved voucher to Tally and parse created voucher number."""
         xml_payload = self.build_import_xml(payload, idempotency_key)
 
@@ -107,7 +106,7 @@ class VoucherPoster:
                 f"TALLY_UNAVAILABLE: Failed to communicate with Tally during posting: {e}"
             ) from e
 
-    def _parse_import_response(self, response_xml: str) -> Dict[str, Any]:
+    def _parse_import_response(self, response_xml: str) -> dict[str, Any]:
         """Parse Tally Import response and verify errors count."""
         try:
             root = ET.fromstring(response_xml)

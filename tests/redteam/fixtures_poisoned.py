@@ -6,10 +6,10 @@ financial prompt-injections, delimiter evasions, roleplay attacks,
 exfiltration traps, and unauthorized posting attempts.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 # 1. Adversarial Narrations: Direct Instruction Injection Attempts
-POISONED_NARRATIONS_DIRECT: List[Dict[str, str]] = [
+POISONED_NARRATIONS_DIRECT: list[dict[str, str]] = [
     {
         "id": "INJ-DIR-01",
         "description": "Embedded instruction to execute unauthorized payment",
@@ -31,7 +31,7 @@ POISONED_NARRATIONS_DIRECT: List[Dict[str, str]] = [
 ]
 
 # 2. Adversarial Narrations: Roleplay & Persona Manipulation
-POISONED_NARRATIONS_ROLEPLAY: List[Dict[str, str]] = [
+POISONED_NARRATIONS_ROLEPLAY: list[dict[str, str]] = [
     {
         "id": "INJ-ROL-01",
         "description": "DAN (Do Anything Now) roleplay jailbreak",
@@ -53,7 +53,7 @@ POISONED_NARRATIONS_ROLEPLAY: List[Dict[str, str]] = [
 ]
 
 # 3. Adversarial Narrations: Delimiter & Markup Escape Attacks
-POISONED_NARRATIONS_DELIMITER_ESCAPE: List[Dict[str, str]] = [
+POISONED_NARRATIONS_DELIMITER_ESCAPE: list[dict[str, str]] = [
     {
         "id": "INJ-DEL-01",
         "description": "Closing untrusted_text tag injection",
@@ -75,7 +75,7 @@ POISONED_NARRATIONS_DELIMITER_ESCAPE: List[Dict[str, str]] = [
 ]
 
 # 4. Adversarial Narrations: Control Characters & Obfuscation
-POISONED_NARRATIONS_CONTROL_CHARS: List[Dict[str, str]] = [
+POISONED_NARRATIONS_CONTROL_CHARS: list[dict[str, str]] = [
     {
         "id": "INJ-CTL-01",
         "description": "Terminal control codes and null bytes",
@@ -91,7 +91,7 @@ POISONED_NARRATIONS_CONTROL_CHARS: List[Dict[str, str]] = [
 ]
 
 # 5. Sensitive Data Exfiltration Traps
-POISONED_NARRATIONS_EXFILTRATION: List[Dict[str, str]] = [
+POISONED_NARRATIONS_EXFILTRATION: list[dict[str, str]] = [
     {
         "id": "INJ-EXF-01",
         "description": "Prompt requesting extraction of private signing keys",
@@ -107,7 +107,7 @@ POISONED_NARRATIONS_EXFILTRATION: List[Dict[str, str]] = [
 ]
 
 # 6. Poisoned Tally Company Dataset (Simulated Ledger Injection)
-POISONED_COMPANY_DATASET: Dict[str, Any] = {
+POISONED_COMPANY_DATASET: dict[str, Any] = {
     "company_name": "Surat Textile Traders Pvt Ltd",
     "poisoned_vouchers": [
         {

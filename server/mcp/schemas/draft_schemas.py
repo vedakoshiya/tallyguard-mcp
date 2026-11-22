@@ -7,8 +7,7 @@ Implements FR-020 to FR-024, enforcing:
 4. Guarantee: Tools output draft proposals only; they never write directly to Tally.
 """
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StrictBaseModel(BaseModel):
@@ -49,12 +48,12 @@ class DraftReceiptVoucherInput(StrictBaseModel):
         max_length=200,
         description="Receiving bank or cash ledger (e.g. 'HDFC Bank', 'Cash in Hand').",
     )
-    reference: Optional[str] = Field(
+    reference: str | None = Field(
         default=None,
         max_length=100,
         description="Invoice reference, NEFT ref, or cheque number.",
     )
-    narration: Optional[str] = Field(
+    narration: str | None = Field(
         default=None,
         max_length=1000,
         description="Voucher narration remarks.",
@@ -68,7 +67,7 @@ class SalesItemInput(StrictBaseModel):
     qty: str = Field(..., pattern=r"^[0-9]+(\.[0-9]{1,4})?$", description="Quantity sold.")
     rate: str = Field(..., pattern=r"^[0-9]+(\.[0-9]{1,2})?$", description="Rate per unit.")
     amount: str = Field(..., pattern=r"^[0-9]+(\.[0-9]{1,2})?$", description="Line item amount.")
-    tax_rate: Optional[str] = Field(default="5.0", description="GST tax rate percentage.")
+    tax_rate: str | None = Field(default="5.0", description="GST tax rate percentage.")
 
 
 class DraftSalesVoucherInput(StrictBaseModel):
@@ -76,10 +75,10 @@ class DraftSalesVoucherInput(StrictBaseModel):
 
     party: str = Field(..., min_length=1, max_length=200, description="Customer / Buyer name.")
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="Sales invoice date (YYYY-MM-DD).")
-    items: List[SalesItemInput] = Field(..., min_length=1, description="List of invoiced items.")
+    items: list[SalesItemInput] = Field(..., min_length=1, description="List of invoiced items.")
     sales_ledger: str = Field(default="Sales Account", description="Sales ledger account.")
-    reference: Optional[str] = Field(default=None, description="Buyer PO number or delivery challan.")
-    narration: Optional[str] = Field(default=None, max_length=1000, description="Voucher narration.")
+    reference: str | None = Field(default=None, description="Buyer PO number or delivery challan.")
+    narration: str | None = Field(default=None, max_length=1000, description="Voucher narration.")
 
 
 class DraftPaymentVoucherInput(StrictBaseModel):
@@ -89,16 +88,16 @@ class DraftPaymentVoucherInput(StrictBaseModel):
     amount: str = Field(..., pattern=r"^[0-9]+(\.[0-9]{1,2})?$", description="Amount paid.")
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="Payment date (YYYY-MM-DD).")
     bank_cash_ledger: str = Field(..., description="Paying bank or cash account.")
-    reference: Optional[str] = Field(default=None, description="Payment ref or cheque number.")
-    narration: Optional[str] = Field(default=None, max_length=1000, description="Narration.")
+    reference: str | None = Field(default=None, description="Payment ref or cheque number.")
+    narration: str | None = Field(default=None, max_length=1000, description="Narration.")
 
 
 class DraftJournalVoucherInput(StrictBaseModel):
     """Input for draft_journal_voucher tool (FR-022)."""
 
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="Journal date (YYYY-MM-DD).")
-    lines: List[DraftVoucherLineInput] = Field(..., min_length=2, description="At least two balanced lines.")
-    narration: Optional[str] = Field(default=None, max_length=1000, description="Narration.")
+    lines: list[DraftVoucherLineInput] = Field(..., min_length=2, description="At least two balanced lines.")
+    narration: str | None = Field(default=None, max_length=1000, description="Narration.")
 
 
 class GetDraftStatusInput(StrictBaseModel):
@@ -118,15 +117,15 @@ class ApprovalDecisionInput(StrictBaseModel):
 
     decision: str = Field(..., pattern=r"^(approve|reject)$", description="'approve' or 'reject'.")
     channel: str = Field(default="web", description="Approval channel (e.g. web, mobile, whatsapp).")
-    note: Optional[str] = Field(default=None, max_length=500, description="Approver's remarks.")
+    note: str | None = Field(default=None, max_length=500, description="Approver's remarks.")
 
 
 class DraftSummaryLine(BaseModel):
     """Dr/Cr representation line in draft response."""
 
     ledger: str
-    dr: Optional[str] = None
-    cr: Optional[str] = None
+    dr: str | None = None
+    cr: str | None = None
 
 
 class DraftResponse(BaseModel):
@@ -136,8 +135,8 @@ class DraftResponse(BaseModel):
     status: str
     voucher_type: str
     summary: str
-    lines: List[DraftSummaryLine]
-    flags: List[str]
+    lines: list[DraftSummaryLine]
+    flags: list[str]
     risk_level: str
     approval_url: str
     expires_at: str

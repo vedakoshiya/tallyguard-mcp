@@ -5,7 +5,7 @@ Defines valid system scopes, maps MCP tools to required capabilities,
 and enforces strict access boundaries.
 """
 
-from typing import Dict, List, Set
+
 from server.auth.tokens import TokenClaims
 
 # System OAuth Scopes
@@ -17,7 +17,7 @@ SCOPE_DRAFT_VOUCHERS = "draft:vouchers"
 SCOPE_APPROVE_VOUCHERS = "approve:vouchers"  # HUMAN ONLY
 SCOPE_ADMIN_USERS = "admin:users"
 
-ALL_VALID_SCOPES: Set[str] = {
+ALL_VALID_SCOPES: set[str] = {
     SCOPE_READ_REPORTS,
     SCOPE_READ_LEDGERS,
     SCOPE_READ_VOUCHERS,
@@ -28,7 +28,7 @@ ALL_VALID_SCOPES: Set[str] = {
 }
 
 # Mapping of MCP tools to required scopes
-TOOL_SCOPE_REQUIREMENTS: Dict[str, str] = {
+TOOL_SCOPE_REQUIREMENTS: dict[str, str] = {
     "get_company_info": SCOPE_READ_REPORTS,
     "list_ledgers": SCOPE_READ_LEDGERS,
     "get_party_ledger": SCOPE_READ_LEDGERS,
@@ -53,7 +53,7 @@ TOOL_SCOPE_REQUIREMENTS: Dict[str, str] = {
 class ScopeDeniedError(Exception):
     """Raised when an actor lacks the required scope to execute a tool or access a resource."""
 
-    def __init__(self, message: str, required_scope: str, granted_scopes: List[str]):
+    def __init__(self, message: str, required_scope: str, granted_scopes: list[str]):
         super().__init__(message)
         self.code = "SCOPE_DENIED"
         self.required_scope = required_scope

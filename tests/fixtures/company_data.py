@@ -5,9 +5,9 @@ ensuring exact paisa reconciliation across ledgers, vouchers, ageing, stock, and
 """
 
 from decimal import Decimal
-from typing import Any, Dict, List
+from typing import Any
 
-COMPANY_METADATA: Dict[str, Any] = {
+COMPANY_METADATA: dict[str, Any] = {
     "name": "Surat Textile Traders Pvt Ltd",
     "financial_year_from": "2026-04-01",
     "financial_year_to": "2027-03-31",
@@ -19,7 +19,7 @@ COMPANY_METADATA: Dict[str, Any] = {
 }
 
 # Chart of Accounts with exact balances
-CHART_OF_ACCOUNTS: List[Dict[str, Any]] = [
+CHART_OF_ACCOUNTS: list[dict[str, Any]] = [
     {
         "name": "Cash in Hand",
         "parent": "Cash-in-Hand",
@@ -93,7 +93,7 @@ CHART_OF_ACCOUNTS: List[Dict[str, Any]] = [
 ]
 
 # Detailed Vouchers
-SAMPLE_VOUCHERS: List[Dict[str, Any]] = [
+SAMPLE_VOUCHERS: list[dict[str, Any]] = [
     {
         "voucher_no": "SAL-001",
         "voucher_type": "Sales",
@@ -145,7 +145,7 @@ SAMPLE_VOUCHERS: List[Dict[str, Any]] = [
 ]
 
 # Receivables Outstanding Bills (as of 2026-10-31)
-RECEIVABLES_BILLS: List[Dict[str, Any]] = [
+RECEIVABLES_BILLS: list[dict[str, Any]] = [
     {
         "bill_no": "INV-2026-01",
         "party": "Patel Textiles",
@@ -176,7 +176,7 @@ RECEIVABLES_BILLS: List[Dict[str, Any]] = [
 ]
 
 # Stock Summary
-STOCK_ITEMS: List[Dict[str, Any]] = [
+STOCK_ITEMS: list[dict[str, Any]] = [
     {
         "name": "Cotton Grey Fabric 40s",
         "group": "Fabric",
